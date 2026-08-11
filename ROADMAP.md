@@ -32,7 +32,7 @@ started.
   | *(new)* | `crates/sher_display_protocol/` | native client/compositor protocol — not started |
   | *(new)* | `crates/sher_display_backend/` | backend trait — not started |
   | *(new)* | `crates/sher_display_linux/` | Ubuntu/DRM/evdev backend impl — not started |
-  | `compatibility/wayland` (planned) | `crates/sher_display_wayland_compat/` | rename on creation |
+  | `compatibility/wayland` (built as `sher_display_compat_wayland`) | `crates/sher_display_wayland_compat/` | move + rename package |
   | *(new)* | `crates/sher_display_test/` | cross-crate integration tests |
   | *(new)* | `tools/sher-display-monitor/` | diagnostics CLI (spec v2 section 41) |
 
@@ -71,6 +71,14 @@ started.
 - [~] `clipboard`: manifest created, implementation not started — was
       mid-flight when spec v2 arrived; folding scope into the leaner crate
       set is part of the pending structural migration.
+- [x] `compatibility/wayland` (`sher_display_compat_wayland`): translates
+      client-connect/create-surface/attach-buffer/damage/commit/destroy
+      into calls against `Compositor`/`WindowManager`, guarantees no
+      orphaned surfaces on client disconnect. Owns only the kernel-facing
+      `WaylandTransport` plus its own protocol bookkeeping (surface→node,
+      surface→window, surface→client maps) — never owns `Compositor` or
+      `WindowManager` itself, both are taken as `&mut` parameters so
+      whatever eventually assembles the session is the one owner.
 - [ ] Buffer ownership/synchronization as a first-class concept. Today
       `SurfaceState.buffer_id` is just an `ObjectId` handle — no release
       notification, no fence, no "still being written" guard. Needed before

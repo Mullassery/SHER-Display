@@ -1,0 +1,16 @@
+[package]
+name = "sher_display_compat_wayland"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Wayland compatibility boundary: translates wayland_server::WaylandTransport (SHER-Kernel) protocol events into SHER-Display's surface/window/compositor state (spec section 28, 32)"
+
+[dependencies]
+sher_common = { workspace = true }
+wayland_server = { workspace = true }
+sher_display_scene = { workspace = true }
+sher_display_surfaces = { workspace = true }
+sher_display_windows = { workspace = true }
+sher_display_compositor = { workspace = true }
