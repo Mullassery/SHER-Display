@@ -36,11 +36,12 @@ started.
   | *(new)* | `crates/sher_display_test/` | cross-crate integration tests |
   | *(new)* | `tools/sher-display-monitor/` | diagnostics CLI (spec v2 section 41) |
 
-- [ ] Define the SHER-Input contract: a trait or small protocol crate
-      describing normalized device events, so `sher_display_input` (built
-      as a temporary bridge over SHER-Kernel's `input_driver` today) can be
-      swapped to consume real SHER-Input later without changing routing
-      logic in the compositor.
+- [x] SHER-Input contract: turned out to not be SHER-Display's to define —
+      SHER-Input (`Mullassery/SHER-INPUT`) now exists as a real, independent
+      repo with its own canonical `InputEvent`/`InputEventPayload` model,
+      `InputService` orchestrator, and `CaptureRegistry`. `sher_display_input`
+      consumes it directly; see Phase 4 and VISION.md's "SHER-Input
+      integration" section.
 - [x] Boundary audit against SHER-Graphics/SHER-Input: found and fixed a
       real violation — `sher_display_outputs::OutputManager` was
       instantiating its own `gpu_driver::GPUDriver`, duplicating
@@ -138,23 +139,42 @@ started.
       GPU composition.
 - [ ] Presentation + frame-timing feedback (vblank, completion fences) back
       into `compositor`'s scheduler.
+- [ ] Decide how SHER-Display parameterizes over `GraphicsRuntime<D:
+      GpuDriver>`'s driver type generic, so `outputs`, `compositor`, and
+      `cursor` (see Phase 6) can all reach it consistently instead of each
+      crate making its own ad hoc choice. `graphics_runtime` also gained a
+      capability-gated `driver_mut()` escape hatch and command-stream
+      validation since the last audit — worth a pass once real wiring
+      starts, not blocking now since nothing calls into it yet.
 
 Not started. Blocked on the buffer-synchronization gap noted in Phase 1.
 
 ## Phase 4 — SHER-Input Integration
 
-- [x] `input`: focus-aware key routing (global shortcuts intercept before
-      app delivery), pointer-over tracking, keyboard layout switching,
-      isolation enforced by construction (an unfocused surface has no code
-      path to receive another surface's key events). Currently bridges
-      directly to SHER-Kernel's `input_driver` as a stand-in for SHER-Input.
-- [ ] Swap the bridge to real SHER-Input once that sibling project exists,
-      against the contract defined in Phase 0.
-- [ ] Explicit, revocable pointer capture (resize/drag/pointer-lock).
-- [ ] Scene-graph hit-testing for pointer targeting — `dispatch_motion`
-      currently trusts an externally supplied `pointer_over`; it does not
-      yet walk the scene graph itself.
-- [ ] Touch, tablet, and gamepad routing.
+- [x] `input` (`sher_display_input`): rewritten to consume real
+      `sher_input_core::InputService` — the temporary bridge to
+      SHER-Kernel's `input_driver` is gone entirely, not just supplemented.
+      Focus-aware routing (keyboard focus, pointer-over target), global
+      shortcuts intercept before app delivery, isolation enforced by
+      construction (`RoutedEvent::Focused` can only ever name the tracked
+      focus target). Verified against a real `InputService` driven by
+      `sher_input_test::SimulatedController` — 5 tests, all passing, no
+      SHER-Display-authored mocks.
+- [x] Explicit, revocable pointer capture — `InputRouter::request_pointer_capture`
+      is a thin pass-through to SHER-Input's `CaptureRegistry`; SHER-Input
+      enforces exclusivity/single-owner/revocable, SHER-Display only decides
+      *when* to ask for it (drag/resize/pointer-lock policy stays here).
+- [x] Keyboard layout switching — pass-through to
+      `InputService::set_layout`; SHER-Input owns the mapping mechanism
+      (`KeyboardLayout` trait, `UsQwertyLayout` today), SHER-Display owns
+      which layout the user configured.
+- [ ] Scene-graph hit-testing for pointer targeting — `pointer_over` is
+      still externally supplied by whatever calls `set_pointer_over`; the
+      router does not yet walk the scene graph itself to compute it.
+- [x] Touch, tablet, and gamepad routing — reach `InputRouter` through the
+      same canonical `InputEventPayload` the keyboard/pointer cases do
+      (`Touch`/`Tablet` route to `pointer_over`, `Gamepad` to
+      `keyboard_focus`); not yet exercised by a dedicated test.
 
 ## Phase 5 — Aurora Integration
 
@@ -169,7 +189,11 @@ compositor loop.
 ## Phase 6 — Advanced Display
 
 - [x] `cursor`: hardware/software fallback negotiation, theme, accessibility
-      minimum size floor, custom (app-supplied) cursor surfaces.
+      minimum size floor, custom (app-supplied) cursor surfaces. The real
+      call site is confirmed: `GraphicsRuntime::{set_cursor_image,
+      set_cursor_position, show_cursor, hide_cursor}` (see VISION.md's
+      "SHER-Graphics cursor seam" section) — not wired yet, pending the
+      Phase 3 driver-generic decision above.
 - [x] `security`: time-bound permission grants for screen capture,
       recording, input injection, clipboard access, window inspection,
       global shortcuts, display configuration, remote display, and

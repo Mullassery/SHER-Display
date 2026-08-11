@@ -50,7 +50,6 @@ uuid = { version = "1", features = ["v4", "serde"] }
 sher_common = { path = "../SHER-Kernel/crates/common" }
 sher_objectmodel = { path = "../SHER-Kernel/crates/objectmodel" }
 gpu_driver = { path = "../SHER-Kernel/crates/gpu_driver" }
-input_driver = { path = "../SHER-Kernel/crates/input_driver" }
 wayland_server = { path = "../SHER-Kernel/crates/wayland_server" }
 
 # SHER-Graphics (GPU abstraction consumed by the compositor)
@@ -58,6 +57,11 @@ graphics_api = { path = "../SHER-Graphics/crates/graphics_api" }
 gpu_abstraction = { path = "../SHER-Graphics/crates/gpu_abstraction" }
 graphics_runtime = { path = "../SHER-Graphics/crates/graphics_runtime" }
 graphics_compat = { path = "../SHER-Graphics/crates/graphics_compat" }
+
+# SHER-Input (canonical normalized event stream; input/ used to bridge
+# directly to SHER-Kernel's input_driver as a stand-in before this existed)
+sher_input_core = { path = "../SHER-Input/crates/core" }
+sher_input_test = { path = "../SHER-Input/crates/test-support" }
 
 # SHER-Display internal crates
 sher_display_compositor = { path = "compositor" }

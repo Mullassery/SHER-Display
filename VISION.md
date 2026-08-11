@@ -36,16 +36,42 @@ question.
 |---|---|---|
 | **SHER-Kernel** | How does the machine operate? (hardware, memory, scheduling, low-level IPC/transport primitives, device primitives) | Desktop compositor policy |
 | **SHER-Graphics** | How does SHER execute rendering on the GPU? (GPU abstraction, rendering contexts, GPU synchronization, Vulkan/OpenGL/Mesa compatibility) | Window focus, desktop policy |
-| **SHER-Input** *(future sibling, not yet built)* | What physical interaction occurred? (device lifecycle, raw/normalized keyboard/pointer/touch/tablet/gamepad events) | Which application/window an event belongs to |
+| **SHER-Input** | What physical interaction occurred? (device lifecycle, canonical ordered/sequenced/coalesced event stream, keyboard-layout mapping, low-level capture enforcement) | Which application/window an event belongs to |
 | **SHER-Display** *(this repo)* | Where do graphical surfaces, windows, and displays live, and where does interaction go? (surfaces, windows, buffers, outputs, compositor, composition, frame scheduling, damage, focus, coordinate transforms, display protocol, input-event routing) | Rendering execution, desktop visual policy |
 | **Aurora** | What does the interaction mean to the desktop UX? (panels, launcher, widgets, settings, visual language, desktop policy, GTK4/libadwaita design system) | Compositor/window-management mechanism |
 
-SHER-Display consumes SHER-Graphics for rendering execution and (once it
-exists) SHER-Input for normalized device events. It does not duplicate
-either. Concretely: `sher_display_compositor` decides *what* needs
-recomposing and produces a `FrameReport`; wiring that into `graphics_runtime`
-for GPU execution is SHER-Graphics integration work, not something
-SHER-Display re-implements.
+SHER-Display consumes SHER-Graphics for rendering execution and SHER-Input
+for normalized device events. It does not duplicate either. Concretely:
+`sher_display_compositor` decides *what* needs recomposing and produces a
+`FrameReport`; wiring that into `graphics_runtime` for GPU execution is
+SHER-Graphics integration work, not something SHER-Display re-implements.
+`sher_display_input` decides *where* an already-normalized event goes
+(global shortcut, keyboard focus, pointer-over target); it does not
+re-derive modifiers, track key-repeat, or talk to a device, all of which
+`sher_input_core::InputService` already does.
+
+### SHER-Input integration (verified working)
+
+SHER-Input (`~/SHER-Input`, `Mullassery/SHER-INPUT`) is a real, separate repo
+now, not a planned future sibling — `sher_display_input` depends on it
+directly (`sher_input_core`) and has since dropped its temporary bridge to
+SHER-Kernel's `input_driver` entirely. The integration is exercised, not just
+declared: `sher_display_input`'s test suite drives a real
+`sher_input_core::InputService` through `sher_input_test::SimulatedController`
+(a hermetic fake backend SHER-Input itself provides for exactly this purpose)
+and asserts on the actual routed output — 5 tests, all passing, no mocks of
+SHER-Display's own making.
+
+What `InputRouter` gets for free from consuming the real contract instead of
+a stand-in: modifier state (`Modifiers`) computed once by SHER-Input instead
+of tracked ad hoc; a canonical `InputEvent` carrying timestamp, sequence
+number, device id, and a `source` that always distinguishes physical from
+synthetic input; and `CaptureRegistry`/`CaptureGuard` for explicit, single-
+owner, revocable pointer capture (spec section 23) — which the earlier
+`input_driver`-backed version had no way to express at all. `InputRouter`
+holds the one `Arc<InputService>` and its own stream subscription, never a
+second copy of device or capture state — the same discipline `outputs`
+follows for SHER-Graphics's `GraphicsRuntime`.
 
 ### The SHER-Kernel `wayland_server` decision (resolved)
 
@@ -85,6 +111,28 @@ SHER-Graphics — see Roadmap Phase 3) into desktop-only policy: logical
 position, per-output scale, orientation, and which output is primary.
 `observe_connector`/`update_mode`/`handle_hotplug` are named to make that
 read-only relationship explicit — none of them call into a GPU driver.
+
+### The SHER-Graphics cursor seam (confirmed, not yet wired)
+
+SHER-Graphics has since added real hardware-cursor primitives to
+`GraphicsRuntime<D>`: `set_cursor_image`, `set_cursor_position`,
+`show_cursor`, `hide_cursor`, `cursor_state`, one `CursorState` per
+presentation connector. Its own doc comments state the boundary explicitly:
+SHER-Graphics knows *how* to render a cursor efficiently; it has no way to
+*derive* a cursor image or position from a raw pointer event — those come
+from an external caller that already decided them. That caller is
+`sher_display_cursor`.
+
+This is confirmed as the correct seam, not yet wired in: `GraphicsRuntime<D>`
+is generic over `D: GpuDriver`, and every cursor method lives in
+`impl<D: GpuDriver> GraphicsRuntime<D>`. Wiring `sher_display_cursor` to call
+it directly means deciding how SHER-Display parameterizes over the driver
+type across the whole compositor stack — a real Phase 3 architectural
+decision (see Roadmap), not something to back into as a side effect of
+verifying the API exists. `sher_display_cursor::CursorManager` continues to
+track policy (`negotiate_render_mode`) as intent for now; the concrete call
+site is `GraphicsRuntime::{set_cursor_image, set_cursor_position, show_cursor,
+hide_cursor}` once that decision is made.
 
 **Rule of thumb going forward:** if a SHER-Display crate is about to write
 `gpu_driver::GPUDriver::new(...)`, `input_driver::InputDriver::new(...)`, or

@@ -5,8 +5,12 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "SHER-Display input routing: focus-aware dispatch, global shortcuts, isolation (spec section 15-18)"
+description = "SHER-Display input routing: focus-aware dispatch, global shortcuts, pointer capture, isolation (spec section 15-18, 21-24)"
 
 [dependencies]
 sher_common = { workspace = true }
-input_driver = { workspace = true }
+sher_input_core = { workspace = true }
+tokio = { workspace = true }
+
+[dev-dependencies]
+sher_input_test = { workspace = true }

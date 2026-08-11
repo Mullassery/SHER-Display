@@ -1,9 +1,11 @@
 # SHER Display
 
 The native display server, compositor, and window-management subsystem for
-[SHER Kernel](https://github.com/Mullassery/SHER-KERNEL) and
-[SHER Graphics](https://github.com/Mullassery/SHER-Graphics) — the layer that
-turns rendered application surfaces into an actual desktop.
+[SHER Kernel](https://github.com/Mullassery/SHER-KERNEL),
+[SHER Graphics](https://github.com/Mullassery/SHER-Graphics), and
+[SHER Input](https://github.com/Mullassery/SHER-INPUT) — the layer that turns
+rendered application surfaces and normalized device activity into an actual,
+interactive desktop.
 
 > Compatibility at the boundary, freedom underneath.
 
@@ -29,13 +31,19 @@ where it belongs.
 ## What's actually here, not just planned
 
 This is an early scaffold, and the numbers below are exact, not rounded up:
-14 crates, 55 tests, zero failures, verified before every commit.
+14 crates, 56 tests, zero failures, verified before every commit.
 
 A few things worth looking at directly rather than taking on faith:
 
+- **A real cross-repo integration, exercised end to end, not just declared
+  as a dependency.** `sher_display_input` drives an actual
+  `sher_input_core::InputService` — SHER-Input's real orchestrator — through
+  the hermetic `SimulatedController` SHER-Input itself ships for exactly
+  this purpose, and asserts on the routed output. No SHER-Display-authored
+  mock stands in for the sibling project.
 - **Isolation enforced by the type system, not a permission check that can
-  be forgotten.** `sher_display_input::RoutedKeyEvent` has no variant that
-  can carry an arbitrary surface id — only the tracked focus target. An
+  be forgotten.** `sher_display_input::RoutedEvent` has no variant that can
+  carry an arbitrary surface id — only the tracked focus target. An
   unfocused application has no code path to another application's
   keystrokes; see `input/src/lib.rs`.
 - **State machines that reject illegal transitions instead of coercing
@@ -45,13 +53,16 @@ A few things worth looking at directly rather than taking on faith:
   grants are time-bound and read as denied the instant they expire, without
   needing an explicit revoke; `sher_display_diagnostics`'s debug-mode gate
   defaults to off and has to be turned on to return anything.
-- **A real cross-repo boundary violation, caught and fixed in the open.**
-  `sher_display_outputs` originally instantiated its own `GPUDriver`,
-  duplicating SHER-Graphics's existing ownership of that hardware state —
-  two unsynchronized views of the same display. It's documented in
-  `VISION.md` under "The SHER-Graphics `GPUDriver` ownership decision," not
-  quietly rewritten out of history, because the fix matters more as a
-  precedent than as a diff.
+- **Real cross-repo boundary violations, caught and fixed in the open, not
+  quietly rewritten out of history.** `sher_display_outputs` originally
+  instantiated its own `GPUDriver`, duplicating SHER-Graphics's existing
+  ownership of that hardware state — two unsynchronized views of the same
+  display. Documented in `VISION.md` under "The SHER-Graphics `GPUDriver`
+  ownership decision," because the fix matters more as a precedent than as
+  a diff. The same document also records where a *matching* seam
+  (SHER-Graphics's hardware-cursor primitives) was confirmed real but
+  deliberately left unwired, because wiring it now would mean backing into
+  a bigger architectural decision as a side effect.
 
 ## The vision and the plan
 
@@ -92,12 +103,13 @@ decision tracked in `ROADMAP.md` Phase 0, not yet executed.
 ## Building
 
 Prerequisites: Rust 1.75+, with
-[`SHER-Kernel`](https://github.com/Mullassery/SHER-KERNEL) and
-[`SHER-Graphics`](https://github.com/Mullassery/SHER-Graphics) checked out as
-**sibling directories** (`../SHER-Kernel`, `../SHER-Graphics` relative to this
-repo) — `sher_common`, `gpu_driver`, `input_driver`, `wayland_server`, and the
-SHER-Graphics crates are consumed via relative path dependencies, not
-published crates yet.
+[`SHER-Kernel`](https://github.com/Mullassery/SHER-KERNEL),
+[`SHER-Graphics`](https://github.com/Mullassery/SHER-Graphics), and
+[`SHER-Input`](https://github.com/Mullassery/SHER-INPUT) checked out as
+**sibling directories** (`../SHER-Kernel`, `../SHER-Graphics`, `../SHER-Input`
+relative to this repo) — `sher_common`, `gpu_driver`, `wayland_server`,
+`sher_input_core`, and the SHER-Graphics crates are consumed via relative
+path dependencies, not published crates yet.
 
 ```bash
 cargo build --workspace
