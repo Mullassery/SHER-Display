@@ -16,11 +16,16 @@ members = [
 
     # Compatibility boundary — scaffolded, tested
     "compatibility/wayland",
+    "compatibility/xwayland",
+
+    # Session & cross-cutting — scaffolded, tested
+    "session",
+    "diagnostics",
+    "configuration",
 
     # Not yet scaffolded (see ROADMAP.md): clipboard, dragdrop, screenshot,
-    # recording, animation, session, compatibility/xwayland, headless, ai,
-    # diagnostics, configuration, tests. Added to `members` as each one
-    # lands rather than committed as empty placeholders.
+    # recording, animation, headless, ai, tests. Added to `members` as each
+    # one lands rather than committed as empty placeholders.
 ]
 
 [workspace.package]
@@ -65,3 +70,7 @@ sher_display_input = { path = "input" }
 sher_display_cursor = { path = "cursor" }
 sher_display_security = { path = "security" }
 sher_display_compat_wayland = { path = "compatibility/wayland" }
+sher_display_compat_xwayland = { path = "compatibility/xwayland" }
+sher_display_session = { path = "session" }
+sher_display_diagnostics = { path = "diagnostics" }
+sher_display_configuration = { path = "configuration" }

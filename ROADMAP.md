@@ -111,6 +111,25 @@ started.
 - [ ] Configure-event negotiation (compositor proposes geometry, client
       acks) rather than the client's request being applied unconditionally.
 
+- [x] `compatibility/xwayland` (`sher_display_compat_xwayland`): X11 XID
+      ↔ surface-id mapping table. Deliberately thin — spawning the real
+      XWayland process and driving it as an ordinary Wayland client through
+      `WaylandBridge` is left to whoever assembles the session; this crate
+      only resolves X11-terms window-management requests to a surface id.
+- [x] `session`: explicit `LoggedOut → Active → Locked` state machine
+      (spec section 33), illegal transitions rejected (e.g. unlock without
+      being locked), multi-seat tracking independent of login state.
+- [x] `diagnostics`: rolling frame-time/input-latency averages, dropped/
+      missed frame counters, the `sher-display-monitor` snapshot shape
+      from spec section 35 — and a fail-closed `DebugMode` gate for the
+      section 36 requirement that debug tooling stay off by default.
+      Doesn't measure GPU/CPU itself (out of its boundary — see
+      VISION.md); only aggregates values pushed into it.
+- [x] `configuration`: one serializable `DisplayConfig` (spec section 37)
+      covering per-output settings, workspace/window/animation/cursor/
+      accessibility/touchpad/power behavior, and keyboard shortcuts —
+      JSON round-trip via `to_json`/`from_json`.
+
 ## Phase 3 — SHER-Graphics Integration
 
 - [ ] Wire `compositor::FrameReport` into `graphics_runtime` for actual GPU

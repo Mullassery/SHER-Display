@@ -1,0 +1,13 @@
+[package]
+name = "sher_display_configuration"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display centralized, machine-readable configuration model (spec section 37)"
+
+[dependencies]
+sher_common = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

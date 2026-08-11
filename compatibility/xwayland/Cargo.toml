@@ -1,0 +1,11 @@
+[package]
+name = "sher_display_compat_xwayland"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "XWayland compatibility boundary: X11 window <-> SHER-Display surface coordinate mapping (spec section 29)"
+
+[dependencies]
+sher_common = { workspace = true }

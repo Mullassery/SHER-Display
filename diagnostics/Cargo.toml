@@ -1,0 +1,11 @@
+[package]
+name = "sher_display_diagnostics"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display performance telemetry and debug-mode gating (spec section 35-36)"
+
+[dependencies]
+sher_common = { workspace = true }
