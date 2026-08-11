@@ -1,0 +1,13 @@
+[package]
+name = "sher_display_compositor"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display compositor core: damage tracking and adaptive frame scheduling (spec section 5-6)"
+
+[dependencies]
+sher_common = { workspace = true }
+sher_display_scene = { workspace = true }
+sher_display_surfaces = { workspace = true }

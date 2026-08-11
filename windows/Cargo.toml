@@ -1,0 +1,13 @@
+[package]
+name = "sher_display_windows"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display window management: window state, layout modes, activation (spec section 8-9)"
+
+[dependencies]
+sher_common = { workspace = true }
+sher_display_scene = { workspace = true }
+sher_display_surfaces = { workspace = true }

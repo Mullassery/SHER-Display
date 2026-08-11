@@ -1,0 +1,63 @@
+[workspace]
+resolver = "2"
+members = [
+    # Core compositor pipeline (Phase 1-2) — scaffolded, tested
+    "compositor",
+    "scene",
+    "surfaces",
+    "windows",
+    "workspaces",
+    "outputs",
+    "input",
+    "cursor",
+
+    # Security boundary — scaffolded, tested
+    "security",
+
+    # Not yet scaffolded (see ROADMAP.md): clipboard, dragdrop, screenshot,
+    # recording, animation, session, compatibility/{wayland,xwayland},
+    # headless, ai, diagnostics, configuration, tests. Added to `members`
+    # as each one lands rather than committed as empty placeholders.
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Georgi Mammen Mullassery <mullassery@gmail.com>"]
+license = "Proprietary License — Free to use with explicit attribution"
+repository = "https://github.com/Mullassery/SHER-Display"
+
+[workspace.dependencies]
+# Shared runtime deps, matching SHER-Kernel/SHER-Graphics conventions
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# SHER-Kernel (foundation types + low-level substrate)
+sher_common = { path = "../SHER-Kernel/crates/common" }
+sher_objectmodel = { path = "../SHER-Kernel/crates/objectmodel" }
+gpu_driver = { path = "../SHER-Kernel/crates/gpu_driver" }
+input_driver = { path = "../SHER-Kernel/crates/input_driver" }
+wayland_server = { path = "../SHER-Kernel/crates/wayland_server" }
+
+# SHER-Graphics (GPU abstraction consumed by the compositor)
+graphics_api = { path = "../SHER-Graphics/crates/graphics_api" }
+gpu_abstraction = { path = "../SHER-Graphics/crates/gpu_abstraction" }
+graphics_runtime = { path = "../SHER-Graphics/crates/graphics_runtime" }
+graphics_compat = { path = "../SHER-Graphics/crates/graphics_compat" }
+
+# SHER-Display internal crates
+sher_display_compositor = { path = "compositor" }
+sher_display_scene = { path = "scene" }
+sher_display_surfaces = { path = "surfaces" }
+sher_display_windows = { path = "windows" }
+sher_display_workspaces = { path = "workspaces" }
+sher_display_outputs = { path = "outputs" }
+sher_display_input = { path = "input" }
+sher_display_cursor = { path = "cursor" }
+sher_display_security = { path = "security" }

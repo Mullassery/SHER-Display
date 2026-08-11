@@ -1,0 +1,11 @@
+[package]
+name = "sher_display_scene"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display scene graph: shared geometry primitives and the node tree composed into a frame"
+
+[dependencies]
+sher_common = { workspace = true }

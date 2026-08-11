@@ -1,0 +1,12 @@
+[package]
+name = "sher_display_outputs"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display display/output management: multi-monitor, hotplug, DPI, refresh rate (spec section 11-14)"
+
+[dependencies]
+sher_common = { workspace = true }
+gpu_driver = { workspace = true }

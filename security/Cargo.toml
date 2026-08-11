@@ -1,0 +1,11 @@
+[package]
+name = "sher_display_security"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display security boundary: time-bound permission grants for capture, recording, injection, clipboard (spec section 46)"
+
+[dependencies]
+sher_common = { workspace = true }

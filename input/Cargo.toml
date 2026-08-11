@@ -1,0 +1,12 @@
+[package]
+name = "sher_display_input"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display input routing: focus-aware dispatch, global shortcuts, isolation (spec section 15-18)"
+
+[dependencies]
+sher_common = { workspace = true }
+input_driver = { workspace = true }

@@ -1,0 +1,12 @@
+[package]
+name = "sher_display_surfaces"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display application surface state: buffers, damage, stacking, presentation (spec section 5-6)"
+
+[dependencies]
+sher_common = { workspace = true }
+sher_display_scene = { workspace = true }

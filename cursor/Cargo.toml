@@ -1,0 +1,11 @@
+[package]
+name = "sher_display_cursor"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display cursor rendering: hardware/software fallback, themes, accessibility sizing (spec section 19)"
+
+[dependencies]
+sher_common = { workspace = true }

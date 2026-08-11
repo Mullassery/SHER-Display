@@ -1,0 +1,11 @@
+[package]
+name = "sher_display_workspaces"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display virtual workspaces: creation, switching, per-output assignment (spec section 10)"
+
+[dependencies]
+sher_common = { workspace = true }
