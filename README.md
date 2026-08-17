@@ -116,6 +116,22 @@ cargo build --workspace
 cargo test --workspace
 ```
 
+## Known limitations
+
+- Not yet scaffolded: clipboard, drag-and-drop, screenshot, recording,
+  animation, headless mode, AI/agent APIs (see the crate list above and
+  `ROADMAP.md`). `clipboard/Cargo.toml` exists as a manifest-only stub but
+  has no `src/` and is not in the workspace `members` list yet.
+- The `crates/` layout migration and the `sher_display_protocol` /
+  `sher_display_backend` / `sher_display_linux` split are an open decision
+  in `ROADMAP.md` Phase 0, not yet executed.
+- This repo is not published as crates; it depends on `SHER-Kernel`,
+  `SHER-Graphics`, and `SHER-Input` via relative path dependencies, so it
+  only builds if those repos are checked out as sibling directories — there
+  is no standalone build today.
+- No open GitHub issues and no `TODO`/`FIXME` markers in the source as of
+  this pass.
+
 ## License
 
 Free to use with explicit attribution — see [`LICENSE`](./LICENSE).
