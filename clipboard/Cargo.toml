@@ -1,0 +1,12 @@
+[package]
+name = "sher_display_clipboard"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SHER-Display clipboard: ownership, multi-format content, permission-aware history (spec section 20)"
+
+[dependencies]
+sher_common = { workspace = true }
+sher_display_security = { workspace = true }
