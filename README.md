@@ -120,8 +120,9 @@ cargo test --workspace
 
 - Not yet scaffolded: clipboard, drag-and-drop, screenshot, recording,
   animation, headless mode, AI/agent APIs (see the crate list above and
-  `ROADMAP.md`). `clipboard/Cargo.toml` exists as a manifest-only stub but
-  has no `src/` and is not in the workspace `members` list yet.
+  `ROADMAP.md`). `clipboard/Cargo.toml` exists as a manifest-only stub —
+  its `src/` directory exists but is empty (no `.rs` files) — and it is
+  not in the workspace `members` list yet.
 - The `crates/` layout migration and the `sher_display_protocol` /
   `sher_display_backend` / `sher_display_linux` split are an open decision
   in `ROADMAP.md` Phase 0, not yet executed.
