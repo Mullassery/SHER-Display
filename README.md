@@ -100,6 +100,38 @@ plus a native `sher_display_protocol` and a `sher_display_backend`/
 `sher_display_linux` split to isolate Ubuntu-specific code — is an open
 decision tracked in `ROADMAP.md` Phase 0, not yet executed.
 
+## Cross-repo compatibility (verified, whole family)
+
+This repo is the most cross-repo-coupled member of a 5-repo family under
+the Mullassery org, expected to be cloned as sibling directories:
+`SHER-Kernel`, `SHER-Graphics`, `SHER-Display` (this repo), `SHER-Input`,
+and `Aurora` (GitHub: `SHER-Aurora`). Actual Cargo-level coupling,
+confirmed by reading every `Cargo.toml` in the family:
+
+- **SHER-Kernel** — this repo depends on it for `sher_common`,
+  `sher_objectmodel`, `gpu_driver`, `wayland_server`, via relative path.
+- **SHER-Graphics** — this repo depends on it for `graphics_api`,
+  `gpu_abstraction`, `graphics_runtime`, `graphics_compat`.
+- **SHER-Input** — this repo depends on it for `sher_input_core`,
+  `sher_input_test`.
+- **Aurora** — zero coupling; not part of this repo's build.
+
+All three deps are relative paths (`../SHER-Kernel/...`,
+`../SHER-Graphics/...`, `../SHER-Input/...`), so this repo's build only
+resolves when all four are sibling directories. Verified current: a
+from-scratch `cargo build --workspace` compiles clean across all 14 crates
+listed above against the current state of all three dependency repos;
+`cargo test --workspace` passes 56/56, genuinely exercising the boundary —
+`input/` drives SHER-Input's real `InputService` (not a local
+reimplementation), and `outputs/` deliberately does **not** instantiate
+`gpu_driver::GPUDriver` from SHER-Kernel, only consuming its `Connector`/
+`DisplayMode` value types, since SHER-Graphics's `graphics_runtime` is the
+crate that actually owns and drives the GPU driver. This ownership split
+is the concrete form of this repo's "never instantiate a driver another
+subsystem already owns" boundary discipline, and it holds as of this
+check — grepped for any other `GPUDriver`/driver-owning construction in
+this repo's source and found none.
+
 ## Building
 
 Prerequisites: Rust 1.75+, with
