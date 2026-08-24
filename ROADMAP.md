@@ -83,7 +83,17 @@ started.
 - [ ] Buffer ownership/synchronization as a first-class concept. Today
       `SurfaceState.buffer_id` is just an `ObjectId` handle — no release
       notification, no fence, no "still being written" guard. Needed before
-      Phase 3 can safely wire in GPU composition.
+      Phase 3 can safely wire in GPU composition. (External critique proposed
+      this as "adopt a lock-free zero-copy IPC ring buffer for framebuffers" —
+      verified there's no naive-copy problem to fix today, since input/kernel
+      data already arrives in-process via `Arc<InputService>` +
+      `tokio::sync::broadcast`, not syscalls. The real gap is buffer
+      release/fence semantics on the handle above, not a new IPC subsystem —
+      and building buffer transport in SHER-Display itself would violate this
+      repo's own driver-ownership boundary: SHER-Kernel keeps the transport
+      primitive, SHER-Display keeps the policy, per VISION.md's resolved
+      `WaylandCompositor`/`GPUDriver` ownership decision. Do not implement the
+      critique as literally proposed.)
 - [ ] `sher_display_protocol`: the native client/compositor contract
       (Connect, CreateSurface, AttachBuffer, CommitSurface, SetGeometry,
       RequestFrame, Configure, Close, ...). Not started.
@@ -186,6 +196,17 @@ Not started. Blocked on the buffer-synchronization gap noted in Phase 1.
 Not started — depends on Phases 1-4 producing a working protocol and
 compositor loop.
 
+**Cross-repo mismatch worth resolving before this phase starts** (external
+critique review, verified): SHER-Aurora's own docs (`CLAUDE.md`, README.md
+"Relationship to the SHER family") state it is GNOME/GTK4-only by design,
+with **zero Cargo-level dependency** on any SHER repo and no scene-graph or
+multi-backend abstraction to target `SHER-Display`'s `scene/` crate — Aurora
+renders through literal `gtk4::Button`/`gtk4::Entry` widgets today, with no
+bridge layer to rework. This Phase 5 plan and Aurora's stated scope
+currently contradict each other; worth a conversation about which one is
+stale before investing in `sher_display_protocol`/scene-graph work aimed at
+Aurora specifically.
+
 ## Phase 6 — Advanced Display
 
 - [x] `cursor`: hardware/software fallback negotiation, theme, accessibility
@@ -207,7 +228,13 @@ compositor loop.
       management.
 - [ ] Headless/virtual-display mode, structured AI/agent APIs
       (`move_window`, `arrange_windows`, permitted screenshot capture)
-      gated through `security`'s permission model.
+      gated through `security`'s permission model. (External critique
+      assumed this was already real, citing the top-level README's
+      "headless mode built in" claim — verified that's aspirational: the
+      `headless/src/` crate has no `.rs` files and isn't in the workspace
+      `members` list. README's own "Known limitations" section already
+      admits this; flagging here since the top-level positioning claim
+      should be softened until this phase actually lands.)
 
 ## Phase 7 — Native SHER Backend
 
