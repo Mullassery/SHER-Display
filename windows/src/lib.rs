@@ -82,10 +82,18 @@ pub struct WindowManager {
 
 impl WindowManager {
     pub fn new() -> Self {
-        WindowManager { windows: HashMap::new(), active_window: None }
+        WindowManager {
+            windows: HashMap::new(),
+            active_window: None,
+        }
     }
 
-    pub fn create_window(&mut self, surface_id: ObjectId, app_id: impl Into<String>, title: impl Into<String>) -> ObjectId {
+    pub fn create_window(
+        &mut self,
+        surface_id: ObjectId,
+        app_id: impl Into<String>,
+        title: impl Into<String>,
+    ) -> ObjectId {
         let window = WindowState::new(surface_id, app_id.into(), title.into());
         let id = window.id;
         self.windows.insert(id, window);
@@ -93,7 +101,9 @@ impl WindowManager {
     }
 
     pub fn destroy_window(&mut self, id: &ObjectId) -> Result<()> {
-        self.windows.remove(id).ok_or_else(|| Error::Device("window not found".to_string()))?;
+        self.windows
+            .remove(id)
+            .ok_or_else(|| Error::Device("window not found".to_string()))?;
         if self.active_window.as_ref() == Some(id) {
             self.active_window = None;
         }
@@ -140,7 +150,9 @@ impl WindowManager {
     pub fn move_to(&mut self, id: &ObjectId, position: Point) -> Result<()> {
         let w = self.require_mut(id)?;
         if w.layout == LayoutMode::Fullscreen || w.layout == LayoutMode::Maximized {
-            return Err(Error::Device("cannot move a fullscreen or maximized window".to_string()));
+            return Err(Error::Device(
+                "cannot move a fullscreen or maximized window".to_string(),
+            ));
         }
         w.position = position;
         Ok(())
@@ -152,13 +164,19 @@ impl WindowManager {
     }
 
     pub fn snap(&mut self, id: &ObjectId, edge: SnapEdge, output_size: Size) -> Result<()> {
-        let half = Size { width: output_size.width / 2.0, height: output_size.height };
+        let half = Size {
+            width: output_size.width / 2.0,
+            height: output_size.height,
+        };
         let w = self.require_mut(id)?;
         w.layout = LayoutMode::Tiled;
         w.size = half;
         w.position = match edge {
             SnapEdge::Left => Point { x: 0.0, y: 0.0 },
-            SnapEdge::Right => Point { x: half.width, y: 0.0 },
+            SnapEdge::Right => Point {
+                x: half.width,
+                y: 0.0,
+            },
             SnapEdge::Top | SnapEdge::Bottom => Point { x: 0.0, y: 0.0 },
         };
         Ok(())
@@ -172,15 +190,24 @@ impl WindowManager {
     }
 
     pub fn windows_for_app(&self, app_id: &str) -> Vec<&WindowState> {
-        self.windows.values().filter(|w| w.app_id == app_id).collect()
+        self.windows
+            .values()
+            .filter(|w| w.app_id == app_id)
+            .collect()
     }
 
     pub fn len(&self) -> usize {
         self.windows.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.windows.is_empty()
+    }
+
     fn require_mut(&mut self, id: &ObjectId) -> Result<&mut WindowState> {
-        self.windows.get_mut(id).ok_or_else(|| Error::Device("window not found".to_string()))
+        self.windows
+            .get_mut(id)
+            .ok_or_else(|| Error::Device("window not found".to_string()))
     }
 }
 
@@ -219,7 +246,15 @@ mod tests {
     #[test]
     fn snap_sets_tiled_layout_and_half_width() {
         let (mut mgr, id) = mgr_with_window();
-        mgr.snap(&id, SnapEdge::Left, Size { width: 1920.0, height: 1080.0 }).unwrap();
+        mgr.snap(
+            &id,
+            SnapEdge::Left,
+            Size {
+                width: 1920.0,
+                height: 1080.0,
+            },
+        )
+        .unwrap();
         let w = mgr.get(&id).unwrap();
         assert_eq!(w.layout, LayoutMode::Tiled);
         assert_eq!(w.size.width, 960.0);

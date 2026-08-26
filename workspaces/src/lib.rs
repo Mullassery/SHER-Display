@@ -40,7 +40,13 @@ impl WorkspaceManager {
 
     pub fn create_workspace(&mut self, name: impl Into<String>, dynamic: bool) -> ObjectId {
         let index = self.order.len();
-        let workspace = Workspace { id: ObjectId::new(), name: name.into(), index, dynamic, windows: Vec::new() };
+        let workspace = Workspace {
+            id: ObjectId::new(),
+            name: name.into(),
+            index,
+            dynamic,
+            windows: Vec::new(),
+        };
         let id = workspace.id;
         self.workspaces.insert(id, workspace);
         self.order.push(id);
@@ -49,9 +55,13 @@ impl WorkspaceManager {
 
     pub fn delete_workspace(&mut self, id: &ObjectId) -> Result<()> {
         if self.workspaces.len() <= 1 {
-            return Err(Error::Device("cannot delete the last workspace".to_string()));
+            return Err(Error::Device(
+                "cannot delete the last workspace".to_string(),
+            ));
         }
-        self.workspaces.remove(id).ok_or_else(|| Error::Device("workspace not found".to_string()))?;
+        self.workspaces
+            .remove(id)
+            .ok_or_else(|| Error::Device("workspace not found".to_string()))?;
         self.order.retain(|w| w != id);
         self.active_per_output.retain(|_, active| active != id);
         for (i, id) in self.order.iter().enumerate() {
@@ -67,7 +77,10 @@ impl WorkspaceManager {
     }
 
     pub fn list(&self) -> Vec<&Workspace> {
-        self.order.iter().filter_map(|id| self.workspaces.get(id)).collect()
+        self.order
+            .iter()
+            .filter_map(|id| self.workspaces.get(id))
+            .collect()
     }
 
     pub fn switch(&mut self, output_id: ObjectId, workspace_id: ObjectId) -> Result<()> {
@@ -87,7 +100,10 @@ impl WorkspaceManager {
     /// workspaces where there's always one spare at the end.
     pub fn assign_window(&mut self, workspace_id: &ObjectId, window_id: ObjectId) -> Result<()> {
         let is_last_dynamic = {
-            let workspace = self.workspaces.get_mut(workspace_id).ok_or_else(|| Error::Device("workspace not found".to_string()))?;
+            let workspace = self
+                .workspaces
+                .get_mut(workspace_id)
+                .ok_or_else(|| Error::Device("workspace not found".to_string()))?;
             if !workspace.windows.contains(&window_id) {
                 workspace.windows.push(window_id);
             }
@@ -99,17 +115,28 @@ impl WorkspaceManager {
         Ok(())
     }
 
-    pub fn move_window(&mut self, window_id: &ObjectId, from: &ObjectId, to: &ObjectId) -> Result<()> {
+    pub fn move_window(
+        &mut self,
+        window_id: &ObjectId,
+        from: &ObjectId,
+        to: &ObjectId,
+    ) -> Result<()> {
         if !self.workspaces.contains_key(to) {
             return Err(Error::Device("destination workspace not found".to_string()));
         }
-        let source = self.workspaces.get_mut(from).ok_or_else(|| Error::Device("source workspace not found".to_string()))?;
+        let source = self
+            .workspaces
+            .get_mut(from)
+            .ok_or_else(|| Error::Device("source workspace not found".to_string()))?;
         source.windows.retain(|w| w != window_id);
         self.assign_window(to, *window_id)
     }
 
     pub fn windows_in(&self, workspace_id: &ObjectId) -> &[ObjectId] {
-        self.workspaces.get(workspace_id).map(|w| w.windows.as_slice()).unwrap_or(&[])
+        self.workspaces
+            .get(workspace_id)
+            .map(|w| w.windows.as_slice())
+            .unwrap_or(&[])
     }
 }
 

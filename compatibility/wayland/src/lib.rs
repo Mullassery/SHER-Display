@@ -66,7 +66,11 @@ impl WaylandBridge {
     }
 
     pub fn connect_client(&mut self, name: impl Into<String>) -> Result<ObjectId> {
-        let client = WaylandClient { id: ObjectId::new(), name: name.into(), is_connected: false };
+        let client = WaylandClient {
+            id: ObjectId::new(),
+            name: name.into(),
+            is_connected: false,
+        };
         let id = client.id;
         self.transport.connect_client(client)?;
         self.clients.insert(id, ClientBookkeeping::default());
@@ -76,8 +80,16 @@ impl WaylandBridge {
     /// Tears down every surface (and window, if any) the client owns
     /// before dropping the connection — "no orphaned surfaces should
     /// remain" (spec section 33).
-    pub fn disconnect_client(&mut self, compositor: &mut Compositor, windows: &mut WindowManager, client_id: &ObjectId) -> Result<()> {
-        let bookkeeping = self.clients.remove(client_id).ok_or_else(|| Error::Device("client not found".to_string()))?;
+    pub fn disconnect_client(
+        &mut self,
+        compositor: &mut Compositor,
+        windows: &mut WindowManager,
+        client_id: &ObjectId,
+    ) -> Result<()> {
+        let bookkeeping = self
+            .clients
+            .remove(client_id)
+            .ok_or_else(|| Error::Device("client not found".to_string()))?;
         for surface_id in bookkeeping.surfaces {
             self.teardown_surface(compositor, windows, &surface_id)?;
         }
@@ -90,7 +102,13 @@ impl WaylandBridge {
     /// this yet (it's chosen once the surface gets mapped), but the scene
     /// graph requires an output association to be composited at all, so
     /// this is the value `set_output` overwrites once placement is known.
-    pub fn create_surface(&mut self, compositor: &mut Compositor, client_id: ObjectId, output_id: ObjectId, role: SurfaceRole) -> Result<ObjectId> {
+    pub fn create_surface(
+        &mut self,
+        compositor: &mut Compositor,
+        client_id: ObjectId,
+        output_id: ObjectId,
+        role: SurfaceRole,
+    ) -> Result<ObjectId> {
         if !self.clients.contains_key(&client_id) {
             return Err(Error::Device("client not found".to_string()));
         }
@@ -108,7 +126,11 @@ impl WaylandBridge {
 
         self.surface_nodes.insert(surface_id, node_id);
         self.surface_clients.insert(surface_id, client_id);
-        self.clients.get_mut(&client_id).unwrap().surfaces.push(surface_id);
+        self.clients
+            .get_mut(&client_id)
+            .unwrap()
+            .surfaces
+            .push(surface_id);
 
         Ok(surface_id)
     }
@@ -117,7 +139,13 @@ impl WaylandBridge {
     /// xdg-toplevel-equivalent step. Section 28 calls out "XDG shell where
     /// appropriate"; this is that seam, without committing to XDG's wire
     /// format.
-    pub fn create_toplevel_window(&mut self, windows: &mut WindowManager, surface_id: ObjectId, app_id: impl Into<String>, title: impl Into<String>) -> Result<ObjectId> {
+    pub fn create_toplevel_window(
+        &mut self,
+        windows: &mut WindowManager,
+        surface_id: ObjectId,
+        app_id: impl Into<String>,
+        title: impl Into<String>,
+    ) -> Result<ObjectId> {
         if !self.surface_nodes.contains_key(&surface_id) {
             return Err(Error::Device("surface not found".to_string()));
         }
@@ -128,28 +156,52 @@ impl WaylandBridge {
 
     /// `wl_surface.attach` + resize in one step: allocates a buffer via the
     /// kernel transport and attaches it to the SHER-Display surface.
-    pub fn attach_buffer(&mut self, compositor: &mut Compositor, surface_id: &ObjectId, width: u32, height: u32, format: u32) -> Result<ObjectId> {
+    pub fn attach_buffer(
+        &mut self,
+        compositor: &mut Compositor,
+        surface_id: &ObjectId,
+        width: u32,
+        height: u32,
+        format: u32,
+    ) -> Result<ObjectId> {
         let buffer = self.transport.create_buffer(width, height, format)?;
-        compositor.surfaces_mut().resize(surface_id, width, height)?;
-        compositor.surfaces_mut().attach_buffer(surface_id, buffer.id)?;
+        compositor
+            .surfaces_mut()
+            .resize(surface_id, width, height)?;
+        compositor
+            .surfaces_mut()
+            .attach_buffer(surface_id, buffer.id)?;
         Ok(buffer.id)
     }
 
-    pub fn damage(&mut self, compositor: &mut Compositor, surface_id: &ObjectId, region: Rect) -> Result<()> {
+    pub fn damage(
+        &mut self,
+        compositor: &mut Compositor,
+        surface_id: &ObjectId,
+        region: Rect,
+    ) -> Result<()> {
         compositor.surfaces_mut().damage(surface_id, region)
     }
 
     /// `wl_surface.commit`: drains the surface's damage into its scene
     /// node so the next `Compositor::tick` picks it up.
     pub fn commit(&mut self, compositor: &mut Compositor, surface_id: &ObjectId) -> Result<()> {
-        let node_id = *self.surface_nodes.get(surface_id).ok_or_else(|| Error::Device("surface not found".to_string()))?;
+        let node_id = *self
+            .surface_nodes
+            .get(surface_id)
+            .ok_or_else(|| Error::Device("surface not found".to_string()))?;
         compositor.commit_surface(surface_id, &node_id)
     }
 
     /// `wl_surface.destroy` for a single surface, without touching the
     /// client connection — used directly by clients and internally by
     /// `disconnect_client`.
-    pub fn destroy_surface(&mut self, compositor: &mut Compositor, windows: &mut WindowManager, surface_id: &ObjectId) -> Result<()> {
+    pub fn destroy_surface(
+        &mut self,
+        compositor: &mut Compositor,
+        windows: &mut WindowManager,
+        surface_id: &ObjectId,
+    ) -> Result<()> {
         self.teardown_surface(compositor, windows, surface_id)?;
         if let Some(client_id) = self.surface_clients.get(surface_id) {
             if let Some(bookkeeping) = self.clients.get_mut(client_id) {
@@ -159,7 +211,12 @@ impl WaylandBridge {
         Ok(())
     }
 
-    fn teardown_surface(&mut self, compositor: &mut Compositor, windows: &mut WindowManager, surface_id: &ObjectId) -> Result<()> {
+    fn teardown_surface(
+        &mut self,
+        compositor: &mut Compositor,
+        windows: &mut WindowManager,
+        surface_id: &ObjectId,
+    ) -> Result<()> {
         if let Some(window_id) = self.surface_windows.remove(surface_id) {
             windows.destroy_window(&window_id)?;
         }
@@ -200,11 +257,19 @@ mod tests {
         compositor.tick(std::time::Duration::from_millis(17)); // consume forced first redraw
 
         let client = bridge.connect_client("weston-terminal").unwrap();
-        let surface = bridge.create_surface(&mut compositor, client, output, SurfaceRole::Toplevel).unwrap();
-        bridge.create_toplevel_window(&mut windows, surface, "org.sher.Terminal", "Terminal").unwrap();
+        let surface = bridge
+            .create_surface(&mut compositor, client, output, SurfaceRole::Toplevel)
+            .unwrap();
+        bridge
+            .create_toplevel_window(&mut windows, surface, "org.sher.Terminal", "Terminal")
+            .unwrap();
 
-        bridge.attach_buffer(&mut compositor, &surface, 800, 600, 0x34325241).unwrap();
-        bridge.damage(&mut compositor, &surface, Rect::new(0.0, 0.0, 800.0, 600.0)).unwrap();
+        bridge
+            .attach_buffer(&mut compositor, &surface, 800, 600, 0x34325241)
+            .unwrap();
+        bridge
+            .damage(&mut compositor, &surface, Rect::new(0.0, 0.0, 800.0, 600.0))
+            .unwrap();
         bridge.commit(&mut compositor, &surface).unwrap();
 
         let reports = compositor.tick(std::time::Duration::from_millis(17));
@@ -220,13 +285,21 @@ mod tests {
         let output = ObjectId::new();
 
         let client = bridge.connect_client("app").unwrap();
-        let s1 = bridge.create_surface(&mut compositor, client, output, SurfaceRole::Toplevel).unwrap();
-        let s2 = bridge.create_surface(&mut compositor, client, output, SurfaceRole::Popup).unwrap();
-        bridge.create_toplevel_window(&mut windows, s1, "app", "Window").unwrap();
+        let s1 = bridge
+            .create_surface(&mut compositor, client, output, SurfaceRole::Toplevel)
+            .unwrap();
+        let s2 = bridge
+            .create_surface(&mut compositor, client, output, SurfaceRole::Popup)
+            .unwrap();
+        bridge
+            .create_toplevel_window(&mut windows, s1, "app", "Window")
+            .unwrap();
 
         assert_eq!(compositor.surfaces().len(), 2);
 
-        bridge.disconnect_client(&mut compositor, &mut windows, &client).unwrap();
+        bridge
+            .disconnect_client(&mut compositor, &mut windows, &client)
+            .unwrap();
 
         assert_eq!(compositor.surfaces().len(), 0);
         assert!(compositor.scene().is_empty());
@@ -243,10 +316,16 @@ mod tests {
         let output = ObjectId::new();
 
         let client = bridge.connect_client("app").unwrap();
-        let s1 = bridge.create_surface(&mut compositor, client, output, SurfaceRole::Toplevel).unwrap();
-        let s2 = bridge.create_surface(&mut compositor, client, output, SurfaceRole::Toplevel).unwrap();
+        let s1 = bridge
+            .create_surface(&mut compositor, client, output, SurfaceRole::Toplevel)
+            .unwrap();
+        let s2 = bridge
+            .create_surface(&mut compositor, client, output, SurfaceRole::Toplevel)
+            .unwrap();
 
-        bridge.destroy_surface(&mut compositor, &mut windows, &s1).unwrap();
+        bridge
+            .destroy_surface(&mut compositor, &mut windows, &s1)
+            .unwrap();
 
         assert!(compositor.surfaces().get(&s1).is_none());
         assert!(compositor.surfaces().get(&s2).is_some());
@@ -258,7 +337,12 @@ mod tests {
         let mut compositor = Compositor::new();
         let bogus_client = ObjectId::new();
 
-        let result = bridge.create_surface(&mut compositor, bogus_client, ObjectId::new(), SurfaceRole::Toplevel);
+        let result = bridge.create_surface(
+            &mut compositor,
+            bogus_client,
+            ObjectId::new(),
+            SurfaceRole::Toplevel,
+        );
         assert!(result.is_err());
     }
 }

@@ -85,7 +85,11 @@ impl PerformanceMonitor {
     pub fn snapshot(&self) -> DiagnosticsSnapshot {
         let frame_time_ms = average(&self.frame_times_ms);
         DiagnosticsSnapshot {
-            fps: if frame_time_ms > 0.0 { 1000.0 / frame_time_ms } else { 0.0 },
+            fps: if frame_time_ms > 0.0 {
+                1000.0 / frame_time_ms
+            } else {
+                0.0
+            },
             frame_time_ms,
             input_latency_ms: average(&self.input_latencies_ms),
             gpu_percent: self.gpu_percent,

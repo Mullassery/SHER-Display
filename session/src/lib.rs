@@ -28,7 +28,11 @@ pub struct GraphicalSession {
 
 impl GraphicalSession {
     pub fn new() -> Self {
-        GraphicalSession { state: SessionState::LoggedOut, user: None, seats: Vec::new() }
+        GraphicalSession {
+            state: SessionState::LoggedOut,
+            user: None,
+            seats: Vec::new(),
+        }
     }
 
     pub fn state(&self) -> SessionState {
@@ -41,7 +45,9 @@ impl GraphicalSession {
 
     pub fn login(&mut self, user: impl Into<String>) -> Result<()> {
         if self.state != SessionState::LoggedOut {
-            return Err(Error::Security("cannot log in: session is already active".to_string()));
+            return Err(Error::Security(
+                "cannot log in: session is already active".to_string(),
+            ));
         }
         self.user = Some(user.into());
         self.state = SessionState::Active;
@@ -50,7 +56,9 @@ impl GraphicalSession {
 
     pub fn logout(&mut self) -> Result<()> {
         if self.state == SessionState::LoggedOut {
-            return Err(Error::Security("cannot log out: no active session".to_string()));
+            return Err(Error::Security(
+                "cannot log out: no active session".to_string(),
+            ));
         }
         self.user = None;
         self.state = SessionState::LoggedOut;
@@ -59,7 +67,9 @@ impl GraphicalSession {
 
     pub fn lock(&mut self) -> Result<()> {
         if self.state != SessionState::Active {
-            return Err(Error::Security("cannot lock: session is not active".to_string()));
+            return Err(Error::Security(
+                "cannot lock: session is not active".to_string(),
+            ));
         }
         self.state = SessionState::Locked;
         Ok(())
@@ -71,7 +81,9 @@ impl GraphicalSession {
     /// check.
     pub fn unlock(&mut self) -> Result<()> {
         if self.state != SessionState::Locked {
-            return Err(Error::Security("cannot unlock: session is not locked".to_string()));
+            return Err(Error::Security(
+                "cannot unlock: session is not locked".to_string(),
+            ));
         }
         self.state = SessionState::Active;
         Ok(())
@@ -82,7 +94,9 @@ impl GraphicalSession {
     /// back in `Active`.
     pub fn restart(&mut self) -> Result<()> {
         if self.state == SessionState::LoggedOut {
-            return Err(Error::Security("cannot restart: no active session".to_string()));
+            return Err(Error::Security(
+                "cannot restart: no active session".to_string(),
+            ));
         }
         self.state = SessionState::Active;
         Ok(())

@@ -8,22 +8,17 @@
 //! own small `Orientation` rather than depending on `sher_display_outputs`
 //! just for one enum.
 
-use sher_common::{Error, Result};
 use serde::{Deserialize, Serialize};
+use sher_common::{Error, Result};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Orientation {
+    #[default]
     Landscape,
     Portrait,
     LandscapeFlipped,
     PortraitFlipped,
-}
-
-impl Default for Orientation {
-    fn default() -> Self {
-        Orientation::Landscape
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -37,7 +32,13 @@ pub struct OutputSettings {
 
 impl Default for OutputSettings {
     fn default() -> Self {
-        OutputSettings { resolution: (1920, 1080), refresh_rate: 60, scale: 1.0, orientation: Orientation::default(), primary: false }
+        OutputSettings {
+            resolution: (1920, 1080),
+            refresh_rate: 60,
+            scale: 1.0,
+            orientation: Orientation::default(),
+            primary: false,
+        }
     }
 }
 
@@ -56,7 +57,11 @@ pub struct WindowBehavior {
 
 impl Default for WindowBehavior {
     fn default() -> Self {
-        WindowBehavior { focus_follows_mouse: false, snap_enabled: true, default_layout: "floating".to_string() }
+        WindowBehavior {
+            focus_follows_mouse: false,
+            snap_enabled: true,
+            default_layout: "floating".to_string(),
+        }
     }
 }
 
@@ -69,7 +74,11 @@ pub struct AnimationSettings {
 
 impl Default for AnimationSettings {
     fn default() -> Self {
-        AnimationSettings { enabled: true, reduced_motion: false, duration_scale: 1.0 }
+        AnimationSettings {
+            enabled: true,
+            reduced_motion: false,
+            duration_scale: 1.0,
+        }
     }
 }
 
@@ -81,7 +90,10 @@ pub struct CursorSettings {
 
 impl Default for CursorSettings {
     fn default() -> Self {
-        CursorSettings { theme: "sher-default".to_string(), size_px: 24 }
+        CursorSettings {
+            theme: "sher-default".to_string(),
+            size_px: 24,
+        }
     }
 }
 
@@ -133,7 +145,8 @@ impl DisplayConfig {
     }
 
     pub fn bind_shortcut(&mut self, action: impl Into<String>, shortcut: impl Into<String>) {
-        self.keyboard_shortcuts.insert(action.into(), shortcut.into());
+        self.keyboard_shortcuts
+            .insert(action.into(), shortcut.into());
     }
 
     pub fn to_json(&self) -> Result<String> {
@@ -160,7 +173,15 @@ mod tests {
     #[test]
     fn round_trips_through_json() {
         let mut config = DisplayConfig::new();
-        config.set_output("eDP-1", OutputSettings { resolution: (2560, 1600), scale: 2.0, primary: true, ..Default::default() });
+        config.set_output(
+            "eDP-1",
+            OutputSettings {
+                resolution: (2560, 1600),
+                scale: 2.0,
+                primary: true,
+                ..Default::default()
+            },
+        );
         config.bind_shortcut("workspace.switch.next", "Super+Right");
 
         let json = config.to_json().unwrap();

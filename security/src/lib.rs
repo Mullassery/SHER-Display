@@ -59,12 +59,26 @@ pub struct PermissionManager {
 
 impl PermissionManager {
     pub fn new() -> Self {
-        PermissionManager { grants: HashMap::new() }
+        PermissionManager {
+            grants: HashMap::new(),
+        }
     }
 
-    pub fn grant(&mut self, app_id: impl Into<String>, permission: Permission, tier: PermissionTier, now: u64) {
+    pub fn grant(
+        &mut self,
+        app_id: impl Into<String>,
+        permission: Permission,
+        tier: PermissionTier,
+        now: u64,
+    ) {
         let app_id = app_id.into();
-        let grant = Grant { app_id: app_id.clone(), permission, tier, granted_at: now, expires_at: now + tier.duration_secs() };
+        let grant = Grant {
+            app_id: app_id.clone(),
+            permission,
+            tier,
+            granted_at: now,
+            expires_at: now + tier.duration_secs(),
+        };
         self.grants.insert((app_id, permission), grant);
     }
 
@@ -82,7 +96,10 @@ impl PermissionManager {
     }
 
     pub fn active_grants(&self, now: u64) -> Vec<&Grant> {
-        self.grants.values().filter(|g| now < g.expires_at).collect()
+        self.grants
+            .values()
+            .filter(|g| now < g.expires_at)
+            .collect()
     }
 
     /// Drops expired entries. Not called implicitly by `check` so that
@@ -105,16 +122,30 @@ mod tests {
     #[test]
     fn granted_permission_allowed_until_expiry() {
         let mut mgr = PermissionManager::new();
-        mgr.grant("app.example", Permission::ScreenCapture, PermissionTier::Critical, 1_000);
+        mgr.grant(
+            "app.example",
+            Permission::ScreenCapture,
+            PermissionTier::Critical,
+            1_000,
+        );
 
         assert!(mgr.check("app.example", Permission::ScreenCapture, 1_500));
-        assert!(!mgr.check("app.example", Permission::ScreenCapture, 1_000 + PermissionTier::Critical.duration_secs()));
+        assert!(!mgr.check(
+            "app.example",
+            Permission::ScreenCapture,
+            1_000 + PermissionTier::Critical.duration_secs()
+        ));
     }
 
     #[test]
     fn revoke_removes_grant_immediately() {
         let mut mgr = PermissionManager::new();
-        mgr.grant("app.example", Permission::ClipboardAccess, PermissionTier::High, 1_000);
+        mgr.grant(
+            "app.example",
+            Permission::ClipboardAccess,
+            PermissionTier::High,
+            1_000,
+        );
         mgr.revoke("app.example", Permission::ClipboardAccess);
         assert!(!mgr.check("app.example", Permission::ClipboardAccess, 1_001));
     }
@@ -122,7 +153,12 @@ mod tests {
     #[test]
     fn a_grant_for_one_app_does_not_leak_to_another() {
         let mut mgr = PermissionManager::new();
-        mgr.grant("app.trusted", Permission::InputInjection, PermissionTier::Low, 1_000);
+        mgr.grant(
+            "app.trusted",
+            Permission::InputInjection,
+            PermissionTier::Low,
+            1_000,
+        );
         assert!(!mgr.check("app.other", Permission::InputInjection, 1_001));
     }
 }

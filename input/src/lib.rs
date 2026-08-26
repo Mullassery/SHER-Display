@@ -24,8 +24,9 @@
 //! capture state.
 
 pub use sher_input_core::{
-    CaptureGuard, CaptureKind, InputDevice, InputDeviceId, InputEvent, InputEventPayload, InputService, KeyAction,
-    KeyboardLayout, Modifiers, PhysicalKey, PointerButton, PointerEvent, PointerGrabMode,
+    CaptureGuard, CaptureKind, InputDevice, InputDeviceId, InputEvent, InputEventPayload,
+    InputService, KeyAction, KeyboardLayout, Modifiers, PhysicalKey, PointerButton, PointerEvent,
+    PointerGrabMode,
 };
 
 use std::sync::Arc;
@@ -66,7 +67,13 @@ impl InputRouter {
     /// SHER-Graphics's `GraphicsRuntime`).
     pub fn new(service: Arc<InputService>) -> Self {
         let receiver = service.subscribe();
-        InputRouter { service, receiver, keyboard_focus: None, pointer_over: None, shortcuts: Vec::new() }
+        InputRouter {
+            service,
+            receiver,
+            keyboard_focus: None,
+            pointer_over: None,
+            shortcuts: Vec::new(),
+        }
     }
 
     pub fn service(&self) -> &Arc<InputService> {
@@ -91,8 +98,17 @@ impl InputRouter {
 
     /// Registered by SHER-Display itself (settings, session, desktop) —
     /// never by an arbitrary application (section 17).
-    pub fn register_global_shortcut(&mut self, modifiers: Modifiers, key: PhysicalKey, action: impl Into<String>) {
-        self.shortcuts.push(GlobalShortcut { modifiers, key, action: action.into() });
+    pub fn register_global_shortcut(
+        &mut self,
+        modifiers: Modifiers,
+        key: PhysicalKey,
+        action: impl Into<String>,
+    ) {
+        self.shortcuts.push(GlobalShortcut {
+            modifiers,
+            key,
+            action: action.into(),
+        });
     }
 
     /// Which layout SHER-Input maps physical keys through is a user
@@ -112,7 +128,8 @@ impl InputRouter {
         reason: impl Into<String>,
         mode: Option<PointerGrabMode>,
     ) -> sher_input_core::Result<CaptureGuard> {
-        self.service.request_capture(CaptureKind::Pointer, owner, reason, mode)
+        self.service
+            .request_capture(CaptureKind::Pointer, owner, reason, mode)
     }
 
     /// Drains every event currently available on the canonical stream and
@@ -125,7 +142,8 @@ impl InputRouter {
         loop {
             match self.receiver.try_recv() {
                 Ok(event) => routed.push(self.route(event)),
-                Err(broadcast::error::TryRecvError::Empty) | Err(broadcast::error::TryRecvError::Closed) => break,
+                Err(broadcast::error::TryRecvError::Empty)
+                | Err(broadcast::error::TryRecvError::Closed) => break,
                 // A slow consumer fell behind SHER-Input's ring buffer. Skip
                 // ahead rather than stalling the whole frame on history that
                 // no longer matters for "what should the desktop do right now."
@@ -138,8 +156,10 @@ impl InputRouter {
     fn route(&self, event: InputEvent) -> RoutedEvent {
         if let InputEventPayload::Keyboard(ref key_event) = event.payload {
             if key_event.action == KeyAction::Down {
-                if let Some(shortcut) =
-                    self.shortcuts.iter().find(|s| s.modifiers == event.modifiers && s.key == key_event.physical_key)
+                if let Some(shortcut) = self
+                    .shortcuts
+                    .iter()
+                    .find(|s| s.modifiers == event.modifiers && s.key == key_event.physical_key)
                 {
                     return RoutedEvent::Global(shortcut.action.clone());
                 }
@@ -148,7 +168,9 @@ impl InputRouter {
 
         let target = match event.payload {
             InputEventPayload::Keyboard(_) => self.keyboard_focus,
-            InputEventPayload::Pointer(_) | InputEventPayload::Touch(_) | InputEventPayload::Tablet(_) => self.pointer_over,
+            InputEventPayload::Pointer(_)
+            | InputEventPayload::Touch(_)
+            | InputEventPayload::Tablet(_) => self.pointer_over,
             InputEventPayload::Gamepad(_) => self.keyboard_focus,
             InputEventPayload::DeviceAdded(_) | InputEventPayload::DeviceRemoved(_) => None,
         };
@@ -214,7 +236,10 @@ mod tests {
         let surface = ObjectId::new();
         router.set_keyboard_focus(Some(surface));
 
-        let mods = Modifiers { logo: true, ..Default::default() };
+        let mods = Modifiers {
+            logo: true,
+            ..Default::default()
+        };
         router.register_global_shortcut(mods, PhysicalKey::ArrowRight, "workspace.switch.next");
 
         controller.press_key(keyboard, PhysicalKey::SuperLeft);
@@ -229,7 +254,9 @@ mod tests {
     async fn pointer_capture_is_exclusive_and_revocable() {
         let (router, _controller) = router_with_controller();
 
-        let first = router.request_pointer_capture("compositor.drag", "window drag", None).unwrap();
+        let first = router
+            .request_pointer_capture("compositor.drag", "window drag", None)
+            .unwrap();
         let second = router.request_pointer_capture("some.app", "unrelated", None);
         assert!(second.is_err());
 
@@ -252,7 +279,11 @@ mod tests {
         router.service().flush_coalesced();
 
         let routed = router.drain();
-        assert!(routed.iter().any(|e| matches!(e, RoutedEvent::Focused(id, _) if *id == pointer_target)));
-        assert!(!routed.iter().any(|e| matches!(e, RoutedEvent::Focused(id, _) if *id == keyboard_target)));
+        assert!(routed
+            .iter()
+            .any(|e| matches!(e, RoutedEvent::Focused(id, _) if *id == pointer_target)));
+        assert!(!routed
+            .iter()
+            .any(|e| matches!(e, RoutedEvent::Focused(id, _) if *id == keyboard_target)));
     }
 }

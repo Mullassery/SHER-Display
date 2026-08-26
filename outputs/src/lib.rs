@@ -54,7 +54,10 @@ pub struct OutputManager {
 
 impl OutputManager {
     pub fn new() -> Self {
-        let mut mgr = OutputManager { logical: HashMap::new(), fallback_active: false };
+        let mut mgr = OutputManager {
+            logical: HashMap::new(),
+            fallback_active: false,
+        };
         mgr.ensure_fallback();
         mgr
     }
@@ -109,7 +112,11 @@ impl OutputManager {
         Ok(())
     }
 
-    pub fn set_orientation(&mut self, output_id: &ObjectId, orientation: Orientation) -> Result<()> {
+    pub fn set_orientation(
+        &mut self,
+        output_id: &ObjectId,
+        orientation: Orientation,
+    ) -> Result<()> {
         self.require_mut(output_id)?.orientation = orientation;
         Ok(())
     }
@@ -138,7 +145,11 @@ impl OutputManager {
     /// (primary reassignment, fallback), never the GPU driver itself.
     pub fn handle_hotplug(&mut self, output_id: &ObjectId, connected: bool) -> Result<()> {
         if !connected {
-            let was_primary = self.logical.get(output_id).map(|o| o.primary).unwrap_or(false);
+            let was_primary = self
+                .logical
+                .get(output_id)
+                .map(|o| o.primary)
+                .unwrap_or(false);
             self.logical.remove(output_id);
             if was_primary {
                 if let Some(next) = self.logical.keys().next().copied() {
@@ -178,7 +189,12 @@ impl OutputManager {
                 orientation: Orientation::Landscape,
                 primary: true,
                 mirror_of: None,
-                mode: Some(DisplayMode { width: 1280, height: 720, refresh_rate: 60, clock: 74250 }),
+                mode: Some(DisplayMode {
+                    width: 1280,
+                    height: 720,
+                    refresh_rate: 60,
+                    clock: 74250,
+                }),
             },
         );
         self.fallback_active = true;
@@ -192,7 +208,9 @@ impl OutputManager {
     }
 
     fn require_mut(&mut self, output_id: &ObjectId) -> Result<&mut LogicalOutput> {
-        self.logical.get_mut(output_id).ok_or_else(|| Error::Device("output not found".to_string()))
+        self.logical
+            .get_mut(output_id)
+            .ok_or_else(|| Error::Device("output not found".to_string()))
     }
 }
 
@@ -212,7 +230,12 @@ mod tests {
             id: ObjectId::new(),
             connector_type: ConnectorType::HDMI,
             status: ConnectorStatus::Connected,
-            supported_modes: vec![DisplayMode { width: 1920, height: 1080, refresh_rate: 60, clock: 148500 }],
+            supported_modes: vec![DisplayMode {
+                width: 1920,
+                height: 1080,
+                refresh_rate: 60,
+                clock: 148500,
+            }],
             current_mode: None,
         }
     }

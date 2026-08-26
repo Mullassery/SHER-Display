@@ -63,7 +63,9 @@ pub struct SurfaceManager {
 
 impl SurfaceManager {
     pub fn new() -> Self {
-        SurfaceManager { surfaces: HashMap::new() }
+        SurfaceManager {
+            surfaces: HashMap::new(),
+        }
     }
 
     pub fn create_surface(&mut self, client_id: ObjectId, role: SurfaceRole) -> ObjectId {
@@ -128,7 +130,10 @@ impl SurfaceManager {
     }
 
     pub fn surfaces_for_client(&self, client_id: &ObjectId) -> Vec<&SurfaceState> {
-        self.surfaces.values().filter(|s| &s.client_id == client_id).collect()
+        self.surfaces
+            .values()
+            .filter(|s| &s.client_id == client_id)
+            .collect()
     }
 
     pub fn destroy_surfaces_for_client(&mut self, client_id: &ObjectId) {

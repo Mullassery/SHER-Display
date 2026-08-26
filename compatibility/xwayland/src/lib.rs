@@ -35,7 +35,10 @@ pub struct XWaylandBridge {
 
 impl XWaylandBridge {
     pub fn new() -> Self {
-        XWaylandBridge { window_to_surface: HashMap::new(), surface_to_window: HashMap::new() }
+        XWaylandBridge {
+            window_to_surface: HashMap::new(),
+            surface_to_window: HashMap::new(),
+        }
     }
 
     /// Records that X11 window `xid` is backed by `surface_id`. The
@@ -52,7 +55,10 @@ impl XWaylandBridge {
     }
 
     pub fn unmap_window(&mut self, xid: X11WindowId) -> Result<()> {
-        let surface_id = self.window_to_surface.remove(&xid).ok_or_else(|| Error::Device(format!("X11 window {xid} is not mapped")))?;
+        let surface_id = self
+            .window_to_surface
+            .remove(&xid)
+            .ok_or_else(|| Error::Device(format!("X11 window {xid} is not mapped")))?;
         self.surface_to_window.remove(&surface_id);
         Ok(())
     }

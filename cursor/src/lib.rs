@@ -63,7 +63,10 @@ pub struct CursorManager {
 
 impl CursorManager {
     pub fn new() -> Self {
-        CursorManager { state: CursorState::default(), min_accessible_size_px: 16 }
+        CursorManager {
+            state: CursorState::default(),
+            min_accessible_size_px: 16,
+        }
     }
 
     pub fn state(&self) -> &CursorState {
@@ -102,7 +105,11 @@ impl CursorManager {
     /// back to software compositing (drawing the cursor into the scene
     /// graph like any other node) when hardware isn't available.
     pub fn negotiate_render_mode(&mut self, hardware_available: bool) {
-        self.state.render_mode = if hardware_available { RenderMode::Hardware } else { RenderMode::Software };
+        self.state.render_mode = if hardware_available {
+            RenderMode::Hardware
+        } else {
+            RenderMode::Software
+        };
     }
 }
 

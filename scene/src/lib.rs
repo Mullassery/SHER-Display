@@ -29,7 +29,10 @@ pub struct Rect {
 
 impl Rect {
     pub fn new(x: f64, y: f64, width: f64, height: f64) -> Self {
-        Rect { origin: Point { x, y }, size: Size { width, height } }
+        Rect {
+            origin: Point { x, y },
+            size: Size { width, height },
+        }
     }
 
     pub fn union(&self, other: &Rect) -> Rect {
@@ -49,7 +52,10 @@ pub struct Transform {
 
 impl Transform {
     pub fn identity() -> Self {
-        Transform { scale: 1.0, rotation_degrees: 0.0 }
+        Transform {
+            scale: 1.0,
+            rotation_degrees: 0.0,
+        }
     }
 }
 
@@ -102,7 +108,10 @@ impl SceneNode {
     }
 
     pub fn bounds(&self) -> Rect {
-        Rect { origin: self.position, size: self.size }
+        Rect {
+            origin: self.position,
+            size: self.size,
+        }
     }
 }
 
@@ -117,7 +126,9 @@ pub struct SceneGraph {
 
 impl SceneGraph {
     pub fn new() -> Self {
-        SceneGraph { nodes: HashMap::new() }
+        SceneGraph {
+            nodes: HashMap::new(),
+        }
     }
 
     pub fn insert(&mut self, node: SceneNode) -> ObjectId {
@@ -218,8 +229,12 @@ mod tests {
         let node = SceneNode::new(NodeKind::Window);
         let id = graph.insert(node);
 
-        graph.mark_damage(&id, Rect::new(0.0, 0.0, 10.0, 10.0)).unwrap();
-        graph.mark_damage(&id, Rect::new(5.0, 5.0, 10.0, 10.0)).unwrap();
+        graph
+            .mark_damage(&id, Rect::new(0.0, 0.0, 10.0, 10.0))
+            .unwrap();
+        graph
+            .mark_damage(&id, Rect::new(5.0, 5.0, 10.0, 10.0))
+            .unwrap();
 
         let damage = graph.get(&id).unwrap().damage.unwrap();
         assert_eq!(damage, Rect::new(0.0, 0.0, 15.0, 15.0));

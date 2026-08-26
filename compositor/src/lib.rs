@@ -52,7 +52,11 @@ pub struct Compositor {
 
 impl Compositor {
     pub fn new() -> Self {
-        Compositor { scene: SceneGraph::new(), surfaces: SurfaceManager::new(), schedules: HashMap::new() }
+        Compositor {
+            scene: SceneGraph::new(),
+            surfaces: SurfaceManager::new(),
+            schedules: HashMap::new(),
+        }
     }
 
     pub fn scene(&self) -> &SceneGraph {
@@ -72,7 +76,8 @@ impl Compositor {
     }
 
     pub fn register_output(&mut self, output_id: ObjectId, refresh_hz: u32) {
-        self.schedules.insert(output_id, OutputSchedule::new(refresh_hz));
+        self.schedules
+            .insert(output_id, OutputSchedule::new(refresh_hz));
     }
 
     pub fn unregister_output(&mut self, output_id: &ObjectId) {
@@ -123,7 +128,12 @@ impl Compositor {
         reports
     }
 
-    fn compose(&mut self, output_id: ObjectId, frame_number: u64, full_redraw: bool) -> FrameReport {
+    fn compose(
+        &mut self,
+        output_id: ObjectId,
+        frame_number: u64,
+        full_redraw: bool,
+    ) -> FrameReport {
         let nodes: Vec<&SceneNode> = self.scene.z_ordered_for_output(&output_id);
         let mut damage = Vec::new();
         let mut node_ids = Vec::new();
@@ -199,12 +209,16 @@ mod tests {
         comp.tick(Duration::from_millis(17));
 
         let client = ObjectId::new();
-        let surface_id = comp.surfaces_mut().create_surface(client, SurfaceRole::Toplevel);
+        let surface_id = comp
+            .surfaces_mut()
+            .create_surface(client, SurfaceRole::Toplevel);
         let mut node = SceneNode::new(NodeKind::Window);
         node.output_id = Some(output);
         let node_id = comp.scene_mut().insert(node);
 
-        comp.surfaces_mut().damage(&surface_id, Rect::new(0.0, 0.0, 10.0, 10.0)).unwrap();
+        comp.surfaces_mut()
+            .damage(&surface_id, Rect::new(0.0, 0.0, 10.0, 10.0))
+            .unwrap();
         comp.commit_surface(&surface_id, &node_id).unwrap();
 
         let reports = comp.tick(Duration::from_millis(17));

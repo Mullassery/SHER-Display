@@ -132,6 +132,52 @@ subsystem already owns" boundary discipline, and it holds as of this
 check — grepped for any other `GPUDriver`/driver-owning construction in
 this repo's source and found none.
 
+## Known gaps (external critique, verified)
+
+Two items from the same cross-repo critique pass that fixed real gaps in
+`SHER-Kernel` (lock-free/zero-copy IPC ring buffer) and `SHER-Graphics`
+(driver panic containment) were also flagged against this repo. Verified
+against the actual code rather than assumed:
+
+- **"Formalize IPC/message passing ... for framebuffers/input events" —
+  doesn't apply to this repo as stated, by design.** `sher_core::ipc::IpcBus`
+  (SHER-Kernel) is now a real lock-free, bounded, zero-copy (`Arc<[u8]>`
+  payload) ring buffer — but this repo doesn't depend on `sher_core` and
+  doesn't call it anywhere (grepped the whole tree; zero matches). That's
+  not an oversight: per this repo's boundary discipline (see "Cross-repo
+  compatibility" above), `outputs/` deliberately does not own
+  `gpu_driver::GPUDriver` or any framebuffer/pixel-buffer state —
+  `SHER-Graphics`'s `graphics_runtime::PresentationBridge` is the sole
+  owner of that. There is no framebuffer transport into this repo to
+  formalize, because this repo was never supposed to receive raw
+  framebuffers in the first place. Input events already flow through a
+  different, real mechanism: `input/` subscribes to
+  `sher_input_core::InputService`'s `tokio::sync::broadcast` channel
+  (SHER-Input's own, not a local reimplementation) — a genuine, audited,
+  in-process broadcast primitive, not a naive unbounded queue. Grepped
+  `compositor/`, `surfaces/`, and `scene/` for any internal channel/
+  `VecDeque`/`Vec<u8>`-based message passing of its own: none exists, so
+  there's no framebuffer- or event-scale in-repo data-passing path that's
+  currently naive and would benefit from the ring-buffer fix applied
+  upstream. Net: nothing to change here without violating the ownership
+  split this repo is built around.
+- **"Bridge UI toolkit to display server ... Aurora widgets compile down
+  to direct scene-graph nodes" — real, but out of scope for a single-repo
+  pass.** Confirmed zero coupling (no dependency, no shared types, no
+  scene-graph API surface exposed by this repo for anything to compile
+  down to). Aurora's actual current content (verified via `gh api
+  repos/Mullassery/SHER-Aurora`, which the `aurora` GitHub repo redirects
+  to under its pre-rename name) is a generic GNOME/GTK4 design-system
+  toolkit — design tokens, typography, real `gtk4` widgets — with no
+  SHER-specific scene-graph awareness at all today. Building this bridge
+  means first designing what this repo's scene-graph node API even looks
+  like as a public surface (nothing in `scene/` is exposed for an external
+  toolkit to target yet), then changing Aurora's rendering backend to
+  target it instead of GTK4 — a new, jointly-designed, two-repo feature,
+  not a fix scoped to code that already exists in one repo. Flagging
+  rather than fabricating a partial integration that neither repo asked
+  for.
+
 ## Building
 
 Prerequisites: Rust 1.75+, with
