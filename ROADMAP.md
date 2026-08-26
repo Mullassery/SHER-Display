@@ -186,26 +186,37 @@ Not started. Blocked on the buffer-synchronization gap noted in Phase 1.
       (`Touch`/`Tablet` route to `pointer_over`, `Gamepad` to
       `keyboard_focus`); not yet exercised by a dedicated test.
 
-## Phase 5 — Aurora Integration
+## Phase 5 — Desktop Shell Integration
 
-- [ ] Privileged desktop-shell client concept (Aurora gets capabilities an
-      ordinary application doesn't: global overlays, panel layer-shell-style
-      placement).
-- [ ] Aurora boots as the primary shell on top of SHER-Display on Ubuntu.
+**Resolved (previously flagged as a cross-repo mismatch, external critique
+review):** this phase used to be titled "Aurora Integration" and named
+Aurora as the primary shell. That's stale — `SHER-Aurora`'s own docs
+(`CLAUDE.md` Key Design Decision #3: "GNOME-Native Only — No multi-desktop
+abstraction"; README.md "Relationship to the SHER family") state, as a
+deliberate design decision rather than a gap, that it is GNOME/GTK4-only,
+with **zero Cargo-level dependency** on any SHER repo and no scene-graph or
+multi-backend abstraction to target `SHER-Display`'s `scene/` crate — it
+renders through literal `gtk4::Button`/`gtk4::Entry` widgets, with no bridge
+layer to rework. Retargeting Aurora at a `SHER-Display` scene graph would
+mean reversing that stated decision, not implementing a currently-missing
+piece — Aurora is not going to be that shell. This repo's own README.md
+"Known gaps" section reaches the same conclusion independently.
+
+The underlying need — some privileged shell client with capabilities an
+ordinary application doesn't (global overlays, panel layer-shell-style
+placement) — is still real; it just isn't Aurora. Renamed this phase and
+left its scope open pending a purpose-built shell client (or a future
+project explicitly scoped to target `SHER-Display`'s protocol), rather than
+continuing to name a specific, unwilling integration partner.
+
+- [ ] Privileged desktop-shell client concept (the shell client gets
+      capabilities an ordinary application doesn't: global overlays, panel
+      layer-shell-style placement).
+- [ ] A shell client boots as the primary shell on top of `SHER-Display` on
+      Ubuntu — target implementation TBD, explicitly not `SHER-Aurora`.
 
 Not started — depends on Phases 1-4 producing a working protocol and
 compositor loop.
-
-**Cross-repo mismatch worth resolving before this phase starts** (external
-critique review, verified): SHER-Aurora's own docs (`CLAUDE.md`, README.md
-"Relationship to the SHER family") state it is GNOME/GTK4-only by design,
-with **zero Cargo-level dependency** on any SHER repo and no scene-graph or
-multi-backend abstraction to target `SHER-Display`'s `scene/` crate — Aurora
-renders through literal `gtk4::Button`/`gtk4::Entry` widgets today, with no
-bridge layer to rework. This Phase 5 plan and Aurora's stated scope
-currently contradict each other; worth a conversation about which one is
-stale before investing in `sher_display_protocol`/scene-graph work aimed at
-Aurora specifically.
 
 ## Phase 6 — Advanced Display
 

@@ -176,7 +176,11 @@ against the actual code rather than assumed:
   target it instead of GTK4 — a new, jointly-designed, two-repo feature,
   not a fix scoped to code that already exists in one repo. Flagging
   rather than fabricating a partial integration that neither repo asked
-  for.
+  for. `ROADMAP.md`'s former "Phase 5 — Aurora Integration" repeated this
+  same false claim as a planned phase; it's been corrected to "Phase 5 —
+  Desktop Shell Integration" with Aurora explicitly named as not the
+  target, rather than leaving two contradictory statements in the same
+  repo.
 
 ## Building
 
