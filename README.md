@@ -162,25 +162,22 @@ against the actual code rather than assumed:
   upstream. Net: nothing to change here without violating the ownership
   split this repo is built around.
 - **"Bridge UI toolkit to display server ... Aurora widgets compile down
-  to direct scene-graph nodes" — real, but out of scope for a single-repo
-  pass.** Confirmed zero coupling (no dependency, no shared types, no
+  to direct scene-graph nodes" — real, intended, not built yet.**
+  `SHER-Display` and `SHER-Aurora` are meant to work hand in hand (Aurora as
+  the primary shell on top of this compositor — see `ROADMAP.md` Phase 5),
+  as is true of the whole family from `SHER-Kernel` through `SHER-Aurora` —
+  one interdependent stack at different stages of readiness, not five
+  unrelated repos. Today there's genuinely zero Cargo-level coupling
+  between this repo and Aurora (no dependency, no shared types, no
   scene-graph API surface exposed by this repo for anything to compile
-  down to). Aurora's actual current content (verified via `gh api
-  repos/Mullassery/SHER-Aurora`, which the `aurora` GitHub repo redirects
-  to under its pre-rename name) is a generic GNOME/GTK4 design-system
-  toolkit — design tokens, typography, real `gtk4` widgets — with no
-  SHER-specific scene-graph awareness at all today. Building this bridge
-  means first designing what this repo's scene-graph node API even looks
-  like as a public surface (nothing in `scene/` is exposed for an external
-  toolkit to target yet), then changing Aurora's rendering backend to
-  target it instead of GTK4 — a new, jointly-designed, two-repo feature,
-  not a fix scoped to code that already exists in one repo. Flagging
-  rather than fabricating a partial integration that neither repo asked
-  for. `ROADMAP.md`'s former "Phase 5 — Aurora Integration" repeated this
-  same false claim as a planned phase; it's been corrected to "Phase 5 —
-  Desktop Shell Integration" with Aurora explicitly named as not the
-  target, rather than leaving two contradictory statements in the same
-  repo.
+  down to) — that's a *sequencing* fact (this phase hasn't started; Aurora
+  currently renders through literal `gtk4::Button`/`gtk4::Entry` widgets),
+  not evidence the integration was abandoned or was never planned. Building
+  it means first designing this repo's scene-graph node API as a public
+  surface (nothing in `scene/` is exposed for an external toolkit to target
+  yet), then Aurora's rendering backend targeting it instead of GTK4 — real
+  two-repo work, correctly tracked as not-yet-started in `ROADMAP.md` Phase
+  5 rather than fabricated here.
 
 ## Building
 
