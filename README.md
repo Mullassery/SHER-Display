@@ -214,4 +214,4 @@ cargo test --workspace
 
 ## License
 
-Free to use with explicit attribution — see [`LICENSE`](./LICENSE).
+This project is licensed under the [Apache License 2.0](LICENSE).
