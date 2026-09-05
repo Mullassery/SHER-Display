@@ -237,11 +237,13 @@ that yet either).
       (`move_window`, `arrange_windows`, permitted screenshot capture)
       gated through `security`'s permission model. (External critique
       assumed this was already real, citing the top-level README's
-      "headless mode built in" claim — verified that's aspirational: the
-      `headless/src/` crate has no `.rs` files and isn't in the workspace
-      `members` list. README's own "Known limitations" section already
-      admits this; flagging here since the top-level positioning claim
-      should be softened until this phase actually lands.)
+      "headless mode built in" claim — verified that's aspirational: there
+      is no `headless/` directory or manifest anywhere in this repo, not
+      even a stub — grepped the full working tree and `git log --all` for
+      any commit ever adding one, found none. README's own "Known
+      limitations" section already admits headless isn't built; flagging
+      here since the top-level positioning claim should stay softened
+      until this phase actually lands.)
 
 ## Phase 7 — Native SHER Backend
 
