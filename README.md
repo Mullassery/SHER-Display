@@ -16,6 +16,21 @@ compatibility layers at the edge. Underneath them, SHER Display defines its
 own native surface, window, and compositor model — this is not a
 reimplementation of `wl_display` wearing a different name.
 
+## Use cases
+
+- **Prototyping a compositor/window-management model with AI-agent control
+  as a first-class primitive**, not simulated mouse/keyboard input bolted
+  onto an existing display server.
+- **Studying a concrete example of cross-repo boundary discipline** in a
+  multi-crate Rust workspace — the `GPUDriver` ownership fix and the
+  documented "confirmed real but deliberately left unwired" seam (see
+  "What's actually here" below) are worked examples, not just claims.
+- **Not yet a good fit for:** a usable desktop — clipboard, drag-and-drop,
+  screenshot, recording, animation, headless mode, and AI/agent APIs are
+  all not yet scaffolded (see [Known limitations](#known-limitations)).
+  This also isn't a standalone build — it requires `SHER-Kernel`,
+  `SHER-Graphics`, and `SHER-Input` checked out as sibling directories.
+
 ## Why this exists
 
 Every general-purpose Linux compositor inherits thirty years of Wayland's
