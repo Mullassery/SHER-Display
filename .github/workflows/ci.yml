@@ -74,3 +74,23 @@ jobs:
       - name: cargo clippy --workspace -- -D warnings
         working-directory: SHER-Display
         run: cargo clippy --workspace --all-targets -- -D warnings
+
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SHER-Display
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+
+      # Only lints SHER-Display's own Cargo.lock; the sibling repos are not
+      # checked out here since this job doesn't need to build anything.
+      - name: cargo audit
+        run: cargo audit

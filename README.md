@@ -87,6 +87,20 @@ A few things worth looking at directly rather than taking on faith:
 - [`ROADMAP.md`](./ROADMAP.md) — the full phased plan, with an honest status
   marker on every line: built and tested, partially built, or not started.
   No item claims more than the code backs up.
+- [`ROADMAP_HONEST.md`](./ROADMAP_HONEST.md) — technical-debt inventory,
+  CI/tooling gaps, and what was independently re-verified vs. carried
+  forward from a prior pass. Supplements `ROADMAP.md`; doesn't replace it.
+- [`docs/architecture/README.md`](./docs/architecture/README.md) — Mermaid
+  diagrams of the cross-repo layering and this repo's internal crate
+  dependency graph.
+
+## Contributing
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup and the pre-PR
+checklist, [`SECURITY.md`](./SECURITY.md) to report a security issue
+privately, and [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md). Change history
+is in [`CHANGELOG.md`](./CHANGELOG.md) (no tagged releases yet — everything
+is unreleased, pre-alpha).
 
 ## Workspace
 

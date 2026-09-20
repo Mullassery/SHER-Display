@@ -1,8 +1,12 @@
 # Rust
 /target/
-Cargo.lock
 **/*.rs.bk
 *.pdb
+
+# Cargo.lock is intentionally committed (not ignored): this workspace is
+# consumed by relative-path dependents in sibling SHER repos and CI's cache
+# key hashes it, so it needs to exist in the checked-out tree, not just on
+# disk locally.
 
 # IDE
 .vscode/
