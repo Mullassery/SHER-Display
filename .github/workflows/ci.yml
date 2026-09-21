@@ -19,24 +19,24 @@ jobs:
       # ../SHER-Input/...), so all three must be checked out as sibling
       # directories under the same workspace root as SHER-Display.
       - name: Checkout SHER-Display
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: SHER-Display
 
       - name: Checkout SHER-Kernel
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Mullassery/SHER-KERNEL
           path: SHER-Kernel
 
       - name: Checkout SHER-Graphics
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Mullassery/SHER-Graphics
           path: SHER-Graphics
 
       - name: Checkout SHER-Input
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Mullassery/SHER-INPUT
           path: SHER-Input
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout SHER-Display
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
