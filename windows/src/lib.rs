@@ -123,7 +123,12 @@ impl WindowManager {
                 w.active = false;
             }
         }
-        self.windows.get_mut(id).unwrap().active = true;
+        self.windows
+            .get_mut(id)
+            .expect(
+                "just verified via contains_key() above; entry cannot have been removed in between",
+            )
+            .active = true;
         self.active_window = Some(*id);
         Ok(())
     }

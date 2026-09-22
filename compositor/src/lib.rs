@@ -101,7 +101,10 @@ impl Compositor {
 
         for output_id in output_ids {
             let due = {
-                let schedule = self.schedules.get_mut(&output_id).unwrap();
+                let schedule = self
+                    .schedules
+                    .get_mut(&output_id)
+                    .expect("output_id was collected from self.schedules.keys() moments earlier and nothing removes entries from schedules inside this loop");
                 schedule.elapsed_since_last_frame += dt;
                 schedule.elapsed_since_last_frame >= schedule.refresh_interval
             };
@@ -110,7 +113,10 @@ impl Compositor {
             }
 
             let has_damage = self.scene.has_damage(&output_id);
-            let schedule = self.schedules.get_mut(&output_id).unwrap();
+            let schedule = self
+                .schedules
+                .get_mut(&output_id)
+                .expect("output_id was collected from self.schedules.keys() moments earlier and nothing removes entries from schedules inside this loop");
             if !has_damage && !schedule.force_full_redraw {
                 schedule.elapsed_since_last_frame = Duration::ZERO;
                 continue;

@@ -24,13 +24,18 @@ contradicts it.
   present as real sibling directories on the local machine (not stubbed),
   so this is a genuine from-scratch verification, not a claim taken from
   prior commit messages.
-- **Not verified this pass, sandbox has no network access to
-  github.com/crates.io:** `cargo audit` (RustSec advisory DB fetch timed
-  out), `gh issue list` (GitHub API timed out — README's "no open GitHub
-  issues" claim could not be independently re-confirmed this pass), and any
-  dependency-freshness check (no `cargo-outdated` installed, and it needs
-  network regardless). Treat those specific claims as carried forward from
-  a prior pass, not reconfirmed today.
+- **`cargo audit` — verified for real in a later pass (2026-09-22), network
+  was available this time:** fetched the RustSec advisory DB (1258
+  advisories), scanned `Cargo.lock`'s 75 crate dependencies, **zero
+  vulnerabilities found**, exit code 0. This supersedes the "unverified,
+  no network" status below — the `cargo-audit` CI job added in the prior
+  pass is confirmed to actually run and pass against real advisory data,
+  not just syntactically valid YAML.
+- **Still not verified, no network access in that specific session:**
+  `gh issue list` (GitHub API timed out — README's "no open GitHub issues"
+  claim could not be independently re-confirmed), and dependency-freshness
+  check (no `cargo-outdated` installed). Treat those specific claims as
+  carried forward from a prior pass, not reconfirmed today.
 
 ## Bugs / gaps fixed in this pass
 
@@ -47,6 +52,22 @@ contradicts it.
   workspace's build was not reproducible from a fresh clone (dependency
   versions could drift between environments). Fixed by removing the
   `.gitignore` entry and committing `Cargo.lock`.
+- **Unwrap-after-invariant-check pattern hardened (2026-09-22).**
+  `windows/src/lib.rs:126` and `compositor/src/lib.rs:104,113` (see below
+  for the original description) now use `.expect("<invariant, spelled
+  out>")` instead of bare `.unwrap()`. This doesn't change behavior on any
+  currently-passing path — it's still a panic if the invariant is ever
+  violated — but a future refactor that breaks the invariant now panics
+  with a message identifying exactly which assumption broke, instead of a
+  bare "called `Option::unwrap()` on a `None` value". Full restructuring
+  around `Entry`/`Result` was judged out of scope for a quick-fix pass
+  (each call site's surrounding control flow would need to change, not
+  just the failure mode) and is still worth a dedicated look if this code
+  sees heavy future refactoring.
+- **`cargo audit` run for real (2026-09-22).** Network was available this
+  session (it wasn't in the pass that first flagged this as unverified);
+  75 dependencies scanned against 1258 RustSec advisories, zero
+  vulnerabilities found. See the verification section above for detail.
 
 ## Technical debt found, not fixed (needs a dedicated follow-up)
 
@@ -54,44 +75,39 @@ None of the below are bugs today — they're all provably safe by local
 invariants, verified by reading the surrounding code — but they're worth a
 dedicated pass:
 
-- **No dependency-vulnerability scanning in CI.** Added a `cargo audit` job
-  in this pass (`.github/workflows/ci.yml`), but it has never actually run
-  successfully anywhere — this sandbox can't reach RustSec's advisory DB to
-  test it, and it hasn't executed in real CI yet either (this commit hasn't
-  been pushed). **Next session must confirm it runs green on the actual
-  GitHub Actions runner before trusting it**, and check whether the
-  workspace's dependencies (`tokio 1`, `anyhow 1`, `thiserror 1`,
-  `tracing 0.1`, `tracing-subscriber 0.3`, `serde 1`, `serde_json 1`,
-  `uuid 1` — all major-version-only constraints in `Cargo.toml:41-47`) have
-  any known advisories. Not checked, not assumed clean.
+- **Dependency-vulnerability scanning in CI — locally confirmed working,
+  real-CI-runner confirmation still outstanding.** The `cargo audit` job
+  added in the prior pass (`.github/workflows/ci.yml`) was run for real
+  locally on 2026-09-22 (see "What was actually verified" above): 75
+  dependencies, 1258 advisories, zero findings, exit 0. That means the
+  workspace's loose major-version constraints (`tokio 1`, `anyhow 1`,
+  `thiserror 1`, `tracing 0.1`, `tracing-subscriber 0.3`, `serde 1`,
+  `serde_json 1`, `uuid 1` — `Cargo.toml:41-47`) resolve to versions with
+  no currently-known advisories as of this pass. Still not confirmed
+  green on an actual GitHub Actions runner (this repo hasn't been pushed
+  from this pass yet) — that's an environment-parity check, not a code
+  check, so leaving it for whoever pushes next to watch the Actions tab.
 - **Dependency freshness is unverified.** No `cargo-outdated` run (tool not
   installed, needs network regardless). The workspace pins loose
   major-version ranges, not exact versions, so `Cargo.lock` (now committed)
   is the only source of truth for what's actually resolved — worth a
   `cargo update --dry-run` pass with network access.
-- **Unwrap-after-invariant-check pattern in production (non-test) code,
-  correct today but fragile to future refactors:**
-  - `windows/src/lib.rs:126` — `self.windows.get_mut(id).unwrap().active =
-    true;` inside `activate()`. Safe only because line 117
-    (`if !self.windows.contains_key(id) { return Err(...) }`) already
-    guarded it a few lines earlier — a `contains_key`-then-`get_mut` split
-    that the borrow checker doesn't tie together, so a future edit that
-    reorders or removes the early check would turn this into a panic
-    instead of a `Result::Err`. Same shape of risk applies to using the
-    `Entry` API instead.
-  - `compositor/src/lib.rs:104` and `compositor/src/lib.rs:113` — two
-    `self.schedules.get_mut(&output_id).unwrap()` calls inside `tick()`,
-    both safe because `output_ids` on line 100 is collected directly from
-    `self.schedules.keys()` moments earlier and nothing removes entries
-    from `schedules` inside the loop. Same fragility: correct only as long
-    as nobody adds an early-return or a schedule-removal call between the
-    `keys().collect()` and the loop body.
-  - None of these are reachable from external input today (no network, no
-    real hardware) so there's no live severity — but they're exactly the
-    kind of invariant that a well-intentioned refactor breaks silently
-    because the compiler won't catch it. Recommend replacing with
-    `.expect("<the invariant, spelled out>")` at minimum so a future panic
-    at least explains itself, or restructuring around `Entry`.
+- **Unwrap-after-invariant-check pattern in production (non-test) code —
+  hardened to `.expect()` with explanatory messages (2026-09-22), full
+  `Entry`/`Result` restructuring still open:**
+  - `windows/src/lib.rs:126` (`activate()`) and `compositor/src/lib.rs:104,
+    113` (`tick()`) — see "Bugs / gaps fixed in this pass" above for what
+    changed. The underlying fragility (a `contains_key`/`keys().collect()`
+    check that the borrow checker doesn't tie to the later `get_mut()`)
+    still exists structurally; only the failure mode improved, from a bare
+    panic to a panic with a message naming the broken invariant. None of
+    these are reachable from external input today (no network, no real
+    hardware) so there's no live severity. A dedicated pass restructuring
+    around the `Entry` API (or returning `Result` all the way through
+    `tick()`) would close the fragility itself, not just improve its
+    failure message — still worth doing, just out of scope for this
+    quick-fix pass since it touches control flow, not just the unwrap
+    call.
 - **Coverage gaps already called out honestly in `ROADMAP.md` but worth
   restating as debt, not just missing features:** touch/tablet/gamepad
   input routing (`input/src/lib.rs`, Phase 4) is wired but has "not yet
@@ -142,7 +158,9 @@ section and VISION.md's "GPUDriver ownership decision."
 - `.github/ISSUE_TEMPLATE/bug_report.yml`, `.github/ISSUE_TEMPLATE/feature_request.yml`,
   `.github/pull_request_template.md`.
 - `.github/dependabot.yml` (cargo ecosystem, weekly).
-- A `cargo-audit` CI job (unverified — see above).
+- A `cargo-audit` CI job (locally verified against real advisory data on
+  2026-09-22 — see above; GitHub Actions runner confirmation still
+  outstanding).
 - `docs/architecture/README.md` with Mermaid diagrams of the cross-repo
   layering and the internal crate layering — no architecture doc existed
   before this pass.
@@ -150,15 +168,23 @@ section and VISION.md's "GPUDriver ownership decision."
 
 ## What this pass deliberately did not do
 
-- Did not fix the unwrap-after-invariant-check pattern above — both sites
-  are correct today; a refactor risks introducing new bugs and this is
-  explicitly a documentation-first pass, not a fix-everything pass.
+(Original 2026-09-20 documentation-first pass — the first two bullets below
+were later revisited and fixed in the 2026-09-22 quick-fix pass; see "Bugs
+/ gaps fixed in this pass" above.)
+
+- ~~Did not fix the unwrap-after-invariant-check pattern above~~ — hardened
+  to `.expect()` with explanatory messages on 2026-09-22 (full `Entry`
+  restructuring still open, see above).
+- ~~Did not attempt to verify `cargo audit`~~ — run for real on 2026-09-22,
+  network was available; zero vulnerabilities found (see above).
 - Did not execute the Phase 0 structural migration to `crates/` layout —
   it's an open decision in `ROADMAP.md`, not something to force through a
-  standardization pass.
+  standardization or quick-fix pass.
 - Did not add touch/tablet/gamepad or buffer-release tests — that's new
-  feature work belonging to Phase 1/4, not a docs/tooling pass.
-- Did not attempt to verify `cargo audit` actually finds (or doesn't find)
-  advisories, or check dependency freshness against crates.io — no network
-  access in this sandbox. Flagged above as the first thing to check with
-  network access restored.
+  feature work belonging to Phase 1/4, not a docs/tooling/quick-fix pass.
+- Did not build real enforcement into `security`/`session` — that's new
+  feature work, not a quick-fix.
+- Did not attempt to verify `gh issue list` or dependency freshness against
+  crates.io — no network access for those specific checks in this session
+  (unrelated to the `cargo audit` fetch, which did succeed). Flagged above
+  as still worth a follow-up with GitHub API access restored.

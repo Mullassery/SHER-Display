@@ -38,3 +38,16 @@ Aurora integration.
   re-verification (stub-crate claims, clipboard `src/` claim, Aurora
   integration framing) — see git log for details; each was a docs-only
   correction, not a behavior change.
+- Hardened the two unwrap-after-invariant-check sites flagged in
+  `ROADMAP_HONEST.md`: `windows/src/lib.rs:126` (`activate()`) and
+  `compositor/src/lib.rs:104` and `:113` (`tick()`). Replaced bare
+  `.unwrap()` with `.expect("<invariant, spelled out>")` so a future
+  refactor that breaks the invariant panics with an explanation instead of
+  a bare "called `Option::unwrap()` on a `None` value". No behavior change
+  for any currently-passing path (still panics only if the invariant is
+  ever actually violated); confirmed via full workspace test/clippy/fmt
+  pass, 56/56 tests still green.
+- Ran `cargo audit` for real this pass (network was available, unlike the
+  prior pass): 75 crate dependencies scanned against 1258 RustSec
+  advisories, zero vulnerabilities found. See `ROADMAP_HONEST.md` for the
+  updated status.
