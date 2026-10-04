@@ -47,10 +47,17 @@ serde_json = "1"
 uuid = { version = "1", features = ["v4", "serde"] }
 
 # SHER-Kernel (foundation types + low-level substrate)
-sher_common = { path = "../SHER-Kernel/crates/common" }
-sher_objectmodel = { path = "../SHER-Kernel/crates/objectmodel" }
-gpu_driver = { path = "../SHER-Kernel/crates/gpu_driver" }
-wayland_server = { path = "../SHER-Kernel/crates/wayland_server" }
+# NOTE: the real repo is "SHER-KERNEL" (all caps, github.com/Mullassery/SHER-KERNEL).
+# These paths must match that exactly: macOS/APFS resolves "SHER-Kernel" against
+# an on-disk "SHER-KERNEL" directory silently (case-insensitive by default), but
+# any case-sensitive filesystem -- every stock Ubuntu/ext4 install, every Linux CI
+# runner -- fails `cargo check` outright with "No such file or directory" because
+# no "SHER-Kernel" directory exists there, only "SHER-KERNEL". Verified by building
+# in a real ubuntu:24.04 container against a non-bind-mounted (ext4-backed) copy.
+sher_common = { path = "../SHER-KERNEL/crates/common" }
+sher_objectmodel = { path = "../SHER-KERNEL/crates/objectmodel" }
+gpu_driver = { path = "../SHER-KERNEL/crates/gpu_driver" }
+wayland_server = { path = "../SHER-KERNEL/crates/wayland_server" }
 
 # SHER-Graphics (GPU abstraction consumed by the compositor)
 graphics_api = { path = "../SHER-Graphics/crates/graphics_api" }
@@ -60,8 +67,9 @@ graphics_compat = { path = "../SHER-Graphics/crates/graphics_compat" }
 
 # SHER-Input (canonical normalized event stream; input/ used to bridge
 # directly to SHER-Kernel's input_driver as a stand-in before this existed)
-sher_input_core = { path = "../SHER-Input/crates/core" }
-sher_input_test = { path = "../SHER-Input/crates/test-support" }
+# NOTE: real repo is "SHER-INPUT" (all caps) -- same case-sensitivity hazard as above.
+sher_input_core = { path = "../SHER-INPUT/crates/core" }
+sher_input_test = { path = "../SHER-INPUT/crates/test-support" }
 
 # SHER-Display internal crates
 sher_display_compositor = { path = "compositor" }

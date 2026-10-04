@@ -128,7 +128,9 @@ impl WaylandBridge {
         self.surface_clients.insert(surface_id, client_id);
         self.clients
             .get_mut(&client_id)
-            .unwrap()
+            .expect(
+                "just verified via contains_key() above; entry cannot have been removed in between",
+            )
             .surfaces
             .push(surface_id);
 
