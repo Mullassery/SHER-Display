@@ -6,11 +6,11 @@ started.
 
 ## Phase 0 — Foundation & Ownership Cleanup
 
-- [x] Deprecate SHER-Kernel's `WaylandCompositor`; extract `WaylandTransport`
+- [x] Deprecate SHER-KERNEL's `WaylandCompositor`; extract `WaylandTransport`
       (client connections + buffer handles) as the low-level primitive
-      SHER-Display consumes. 18 tests passing in `SHER-Kernel/crates/wayland_server`.
+      SHER-Display consumes. 18 tests passing in `SHER-KERNEL/crates/wayland_server`.
 - [x] Stand up the SHER-Display Cargo workspace, path dependencies on
-      SHER-Kernel (`sher_common`, `sher_objectmodel`, `gpu_driver`,
+      SHER-KERNEL (`sher_common`, `sher_objectmodel`, `gpu_driver`,
       `input_driver`, `wayland_server`) and SHER-Graphics (`graphics_api`,
       `gpu_abstraction`, `graphics_runtime`, `graphics_compat`).
 - [ ] **Decision pending — structural migration.** Two specs produced two
@@ -27,7 +27,7 @@ started.
   | `windows/`, `workspaces/` | `crates/sher_display_window/` | merge |
   | `outputs/` | `crates/sher_display_output/` | rename |
   | `compositor/`, `cursor/` | `crates/sher_display_compositor/` | merge (cursor is a composited object, not a standalone concern) |
-  | `input/` | stays inside `sher_display_compositor` or a thin `sher_display_input_bridge` | pending SHER-Input contract design below |
+  | `input/` | stays inside `sher_display_compositor` or a thin `sher_display_input_bridge` | pending SHER-INPUT contract design below |
   | `security/` | `crates/sher_display_core/` | merge (permissions are core, not a feature crate) |
   | *(new)* | `crates/sher_display_protocol/` | native client/compositor protocol — not started |
   | *(new)* | `crates/sher_display_backend/` | backend trait — not started |
@@ -36,13 +36,13 @@ started.
   | *(new)* | `crates/sher_display_test/` | cross-crate integration tests |
   | *(new)* | `tools/sher-display-monitor/` | diagnostics CLI (spec v2 section 41) |
 
-- [x] SHER-Input contract: turned out to not be SHER-Display's to define —
-      SHER-Input (`Mullassery/SHER-INPUT`) now exists as a real, independent
+- [x] SHER-INPUT contract: turned out to not be SHER-Display's to define —
+      SHER-INPUT (`Mullassery/SHER-INPUT`) now exists as a real, independent
       repo with its own canonical `InputEvent`/`InputEventPayload` model,
       `InputService` orchestrator, and `CaptureRegistry`. `sher_display_input`
-      consumes it directly; see Phase 4 and VISION.md's "SHER-Input
+      consumes it directly; see Phase 4 and VISION.md's "SHER-INPUT
       integration" section.
-- [x] Boundary audit against SHER-Graphics/SHER-Input: found and fixed a
+- [x] Boundary audit against SHER-Graphics/SHER-INPUT: found and fixed a
       real violation — `sher_display_outputs::OutputManager` was
       instantiating its own `gpu_driver::GPUDriver`, duplicating
       `graphics_runtime::PresentationBridge`'s existing ownership of that
@@ -51,7 +51,7 @@ started.
       `GPUDriver` ownership decision"). `compositor`, `cursor`, `input`,
       `surfaces`, `windows`, `workspaces`, `security` audited clean — none
       construct a driver/hardware handle that competes with an existing
-      owner in SHER-Kernel or SHER-Graphics.
+      owner in SHER-KERNEL or SHER-Graphics.
 
 ## Phase 1 — Display Foundation
 
@@ -90,7 +90,7 @@ started.
       `tokio::sync::broadcast`, not syscalls. The real gap is buffer
       release/fence semantics on the handle above, not a new IPC subsystem —
       and building buffer transport in SHER-Display itself would violate this
-      repo's own driver-ownership boundary: SHER-Kernel keeps the transport
+      repo's own driver-ownership boundary: SHER-KERNEL keeps the transport
       primitive, SHER-Display keeps the policy, per VISION.md's resolved
       `WaylandCompositor`/`GPUDriver` ownership decision. Do not implement the
       critique as literally proposed.)
@@ -159,11 +159,11 @@ started.
 
 Not started. Blocked on the buffer-synchronization gap noted in Phase 1.
 
-## Phase 4 — SHER-Input Integration
+## Phase 4 — SHER-INPUT Integration
 
 - [x] `input` (`sher_display_input`): rewritten to consume real
       `sher_input_core::InputService` — the temporary bridge to
-      SHER-Kernel's `input_driver` is gone entirely, not just supplemented.
+      SHER-KERNEL's `input_driver` is gone entirely, not just supplemented.
       Focus-aware routing (keyboard focus, pointer-over target), global
       shortcuts intercept before app delivery, isolation enforced by
       construction (`RoutedEvent::Focused` can only ever name the tracked
@@ -171,11 +171,11 @@ Not started. Blocked on the buffer-synchronization gap noted in Phase 1.
       `sher_input_test::SimulatedController` — 5 tests, all passing, no
       SHER-Display-authored mocks.
 - [x] Explicit, revocable pointer capture — `InputRouter::request_pointer_capture`
-      is a thin pass-through to SHER-Input's `CaptureRegistry`; SHER-Input
+      is a thin pass-through to SHER-INPUT's `CaptureRegistry`; SHER-INPUT
       enforces exclusivity/single-owner/revocable, SHER-Display only decides
       *when* to ask for it (drag/resize/pointer-lock policy stays here).
 - [x] Keyboard layout switching — pass-through to
-      `InputService::set_layout`; SHER-Input owns the mapping mechanism
+      `InputService::set_layout`; SHER-INPUT owns the mapping mechanism
       (`KeyboardLayout` trait, `UsQwertyLayout` today), SHER-Display owns
       which layout the user configured.
 - [ ] Scene-graph hit-testing for pointer targeting — `pointer_over` is
@@ -225,7 +225,7 @@ that yet either).
 - [x] `security`: time-bound permission grants for screen capture,
       recording, input injection, clipboard access, window inspection,
       global shortcuts, display configuration, remote display, and
-      accessibility privileges — mirrors SHER-Kernel's capability model
+      accessibility privileges — mirrors SHER-KERNEL's capability model
       (fail-secure: absent or expired grant reads as denied, never checked
       implicitly against a live clock so expiry is deterministic in tests).
 - [ ] Clipboard (streaming/chunked for large payloads, not just small blobs),
@@ -247,7 +247,7 @@ that yet either).
 
 ## Phase 7 — Native SHER Backend
 
-Remove Ubuntu/Linux assumptions once SHER-Kernel and SHER-Graphics no longer
+Remove Ubuntu/Linux assumptions once SHER-KERNEL and SHER-Graphics no longer
 sit on Ubuntu; implement a native SHER backend behind the same
 `sher_display_backend` trait used by `sher_display_linux`. Not started —
 explicitly long-term; the backend abstraction in Phase 1 exists precisely so

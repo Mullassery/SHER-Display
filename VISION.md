@@ -5,7 +5,7 @@
 SHER-Display turns what SHER-Graphics can render into an actual interactive
 desktop. It determines what surfaces exist, where they appear, how they are
 composed, which output owns them, and how display-level interaction is
-routed to them. It is the layer that makes SHER-Kernel and SHER-Graphics
+routed to them. It is the layer that makes SHER-KERNEL and SHER-Graphics
 usable as a graphical operating system, and the foundation Aurora builds the
 desktop experience on.
 
@@ -18,7 +18,7 @@ compatibility provided as boundary layers rather than as the thing itself.
 Short term, SHER-Display ships on:
 
 ```
-Ubuntu + SHER-Kernel + SHER-Graphics + SHER-Display + SHER-Input + Aurora
+Ubuntu + SHER-KERNEL + SHER-Graphics + SHER-Display + SHER-INPUT + Aurora
 ```
 
 Ubuntu-specific and Linux-specific integration (DRM/KMS discovery, evdev,
@@ -34,13 +34,13 @@ question.
 
 | Subsystem | Question it answers | Must NOT own |
 |---|---|---|
-| **SHER-Kernel** | How does the machine operate? (hardware, memory, scheduling, low-level IPC/transport primitives, device primitives) | Desktop compositor policy |
+| **SHER-KERNEL** | How does the machine operate? (hardware, memory, scheduling, low-level IPC/transport primitives, device primitives) | Desktop compositor policy |
 | **SHER-Graphics** | How does SHER execute rendering on the GPU? (GPU abstraction, rendering contexts, GPU synchronization, Vulkan/OpenGL/Mesa compatibility) | Window focus, desktop policy |
-| **SHER-Input** | What physical interaction occurred? (device lifecycle, canonical ordered/sequenced/coalesced event stream, keyboard-layout mapping, low-level capture enforcement) | Which application/window an event belongs to |
+| **SHER-INPUT** | What physical interaction occurred? (device lifecycle, canonical ordered/sequenced/coalesced event stream, keyboard-layout mapping, low-level capture enforcement) | Which application/window an event belongs to |
 | **SHER-Display** *(this repo)* | Where do graphical surfaces, windows, and displays live, and where does interaction go? (surfaces, windows, buffers, outputs, compositor, composition, frame scheduling, damage, focus, coordinate transforms, display protocol, input-event routing) | Rendering execution, desktop visual policy |
 | **Aurora** | What does the interaction mean to the desktop UX? (panels, launcher, widgets, settings, visual language, desktop policy, GTK4/libadwaita design system) | Compositor/window-management mechanism |
 
-SHER-Display consumes SHER-Graphics for rendering execution and SHER-Input
+SHER-Display consumes SHER-Graphics for rendering execution and SHER-INPUT
 for normalized device events. It does not duplicate either. Concretely:
 `sher_display_compositor` decides *what* needs recomposing and produces a
 `FrameReport`; wiring that into `graphics_runtime` for GPU execution is
@@ -50,20 +50,20 @@ SHER-Graphics integration work, not something SHER-Display re-implements.
 re-derive modifiers, track key-repeat, or talk to a device, all of which
 `sher_input_core::InputService` already does.
 
-### SHER-Input integration (verified working)
+### SHER-INPUT integration (verified working)
 
-SHER-Input (`~/SHER-Input`, `Mullassery/SHER-INPUT`) is a real, separate repo
+SHER-INPUT (`~/SHER-INPUT`, `Mullassery/SHER-INPUT`) is a real, separate repo
 now, not a planned future sibling — `sher_display_input` depends on it
 directly (`sher_input_core`) and has since dropped its temporary bridge to
-SHER-Kernel's `input_driver` entirely. The integration is exercised, not just
+SHER-KERNEL's `input_driver` entirely. The integration is exercised, not just
 declared: `sher_display_input`'s test suite drives a real
 `sher_input_core::InputService` through `sher_input_test::SimulatedController`
-(a hermetic fake backend SHER-Input itself provides for exactly this purpose)
+(a hermetic fake backend SHER-INPUT itself provides for exactly this purpose)
 and asserts on the actual routed output — 5 tests, all passing, no mocks of
 SHER-Display's own making.
 
 What `InputRouter` gets for free from consuming the real contract instead of
-a stand-in: modifier state (`Modifiers`) computed once by SHER-Input instead
+a stand-in: modifier state (`Modifiers`) computed once by SHER-INPUT instead
 of tracked ad hoc; a canonical `InputEvent` carrying timestamp, sequence
 number, device id, and a `source` that always distinguishes physical from
 synthetic input; and `CaptureRegistry`/`CaptureGuard` for explicit, single-
@@ -73,14 +73,14 @@ holds the one `Arc<InputService>` and its own stream subscription, never a
 second copy of device or capture state — the same discipline `outputs`
 follows for SHER-Graphics's `GraphicsRuntime`.
 
-### The SHER-Kernel `wayland_server` decision (resolved)
+### The SHER-KERNEL `wayland_server` decision (resolved)
 
-SHER-Kernel used to contain a `WaylandCompositor` — surfaces, buffers,
+SHER-KERNEL used to contain a `WaylandCompositor` — surfaces, buffers,
 outputs, pointer/focus, all in the kernel. That violated the boundary above:
 surface/output/focus policy is SHER-Display's job. This has already been
 resolved:
 
-- SHER-Kernel's `wayland_server` crate now exposes `WaylandTransport` — client
+- SHER-KERNEL's `wayland_server` crate now exposes `WaylandTransport` — client
   connection lifecycle and shared buffer handles only. This is retained,
   low-level, kernel-owned.
 - The original `WaylandCompositor` struct is marked `#[deprecated]`, kept for
@@ -136,7 +136,7 @@ hide_cursor}` once that decision is made.
 
 **Rule of thumb going forward:** if a SHER-Display crate is about to write
 `gpu_driver::GPUDriver::new(...)`, `input_driver::InputDriver::new(...)`, or
-anything else that constructs a stateful handle to hardware SHER-Kernel or
+anything else that constructs a stateful handle to hardware SHER-KERNEL or
 SHER-Graphics already owns, that's the signal to stop and mirror facts
 instead of owning a second copy of the state.
 
@@ -181,8 +181,8 @@ tracking, frame scheduling, focus) must not depend on backend details. A
 backend is responsible for: display discovery, output enumeration,
 presentation, buffer integration, synchronization, display modes, hardware
 cursor, and vblank/presentation timing. The first backend targets Linux/Ubuntu
-via SHER-Kernel and SHER-Graphics; a native SHER backend follows once
-SHER-Kernel/SHER-Graphics no longer need Ubuntu underneath them.
+via SHER-KERNEL and SHER-Graphics; a native SHER backend follows once
+SHER-KERNEL/SHER-Graphics no longer need Ubuntu underneath them.
 
 ## Non-goals
 

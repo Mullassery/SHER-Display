@@ -18,8 +18,8 @@ full commit-by-commit history see `git log`.
 - Cross-cutting: `session` (login/lock state machine), `diagnostics`
   (frame-time/input-latency telemetry, fail-closed debug gate),
   `configuration` (serializable `DisplayConfig`).
-- Real integration with the sibling `SHER-Input` repo (`sher_input_core`),
-  replacing an earlier temporary bridge to `SHER-Kernel`'s `input_driver`.
+- Real integration with the sibling `SHER-INPUT` repo (`sher_input_core`),
+  replacing an earlier temporary bridge to `SHER-KERNEL`'s `input_driver`.
 - CI workflow (`cargo fmt`, `cargo build`, `cargo test`, `cargo clippy -D
   warnings`) with sibling-repo checkouts.
 - Relicensed from a proprietary license to Apache-2.0.

@@ -40,7 +40,7 @@ body:
     id: commit
     attributes:
       label: Commit / version
-      description: Output of `git rev-parse HEAD` in SHER-Display, and the same for SHER-Kernel/SHER-Graphics/SHER-Input if relevant.
+      description: Output of `git rev-parse HEAD` in SHER-Display, and the same for SHER-KERNEL/SHER-Graphics/SHER-INPUT if relevant.
     validations:
       required: true
 
@@ -48,7 +48,7 @@ body:
     id: env
     attributes:
       label: Environment
-      description: OS, Rust version (`rustc --version`), and whether you're building against local sibling checkouts of SHER-Kernel/SHER-Graphics/SHER-Input.
+      description: OS, Rust version (`rustc --version`), and whether you're building against local sibling checkouts of SHER-KERNEL/SHER-Graphics/SHER-INPUT.
     validations:
       required: true
 

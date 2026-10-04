@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Read VISION.md's "Ownership boundaries" table first. If the feature
-        you want belongs to SHER-Kernel, SHER-Graphics, SHER-Input, or
+        you want belongs to SHER-KERNEL, SHER-Graphics, SHER-INPUT, or
         Aurora instead of SHER-Display, it should be filed against that
         repo, not this one. Also check ROADMAP.md — it may already be
         planned in a later phase, in which case a comment on the relevant
@@ -32,9 +32,9 @@ body:
       label: Which subsystem should own this?
       options:
         - "SHER-Display (this repo)"
-        - "SHER-Kernel"
+        - "SHER-KERNEL"
         - "SHER-Graphics"
-        - "SHER-Input"
+        - "SHER-INPUT"
         - "Aurora"
         - "Not sure"
     validations:

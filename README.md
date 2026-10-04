@@ -28,8 +28,8 @@ reimplementation of `wl_display` wearing a different name.
 - **Not yet a good fit for:** a usable desktop — clipboard, drag-and-drop,
   screenshot, recording, animation, headless mode, and AI/agent APIs are
   all not yet scaffolded (see [Known limitations](#known-limitations)).
-  This also isn't a standalone build — it requires `SHER-Kernel`,
-  `SHER-Graphics`, and `SHER-Input` checked out as sibling directories.
+  This also isn't a standalone build — it requires `SHER-KERNEL`,
+  `SHER-Graphics`, and `SHER-INPUT` checked out as sibling directories.
 
 ## Why this exists
 
@@ -52,8 +52,8 @@ A few things worth looking at directly rather than taking on faith:
 
 - **A real cross-repo integration, exercised end to end, not just declared
   as a dependency.** `sher_display_input` drives an actual
-  `sher_input_core::InputService` — SHER-Input's real orchestrator — through
-  the hermetic `SimulatedController` SHER-Input itself ships for exactly
+  `sher_input_core::InputService` — SHER-INPUT's real orchestrator — through
+  the hermetic `SimulatedController` SHER-INPUT itself ships for exactly
   this purpose, and asserts on the routed output. No SHER-Display-authored
   mock stands in for the sibling project.
 - **Isolation enforced by the type system, not a permission check that can
@@ -133,27 +133,27 @@ decision tracked in `ROADMAP.md` Phase 0, not yet executed.
 
 This repo is the most cross-repo-coupled member of a 5-repo family under
 the Mullassery org, expected to be cloned as sibling directories:
-`SHER-Kernel`, `SHER-Graphics`, `SHER-Display` (this repo), `SHER-Input`,
+`SHER-KERNEL`, `SHER-Graphics`, `SHER-Display` (this repo), `SHER-INPUT`,
 and `Aurora` (GitHub: `SHER-Aurora`). Actual Cargo-level coupling,
 confirmed by reading every `Cargo.toml` in the family:
 
-- **SHER-Kernel** — this repo depends on it for `sher_common`,
+- **SHER-KERNEL** — this repo depends on it for `sher_common`,
   `sher_objectmodel`, `gpu_driver`, `wayland_server`, via relative path.
 - **SHER-Graphics** — this repo depends on it for `graphics_api`,
   `gpu_abstraction`, `graphics_runtime`, `graphics_compat`.
-- **SHER-Input** — this repo depends on it for `sher_input_core`,
+- **SHER-INPUT** — this repo depends on it for `sher_input_core`,
   `sher_input_test`.
 - **Aurora** — zero coupling; not part of this repo's build.
 
-All three deps are relative paths (`../SHER-Kernel/...`,
-`../SHER-Graphics/...`, `../SHER-Input/...`), so this repo's build only
+All three deps are relative paths (`../SHER-KERNEL/...`,
+`../SHER-Graphics/...`, `../SHER-INPUT/...`), so this repo's build only
 resolves when all four are sibling directories. Verified current: a
 from-scratch `cargo build --workspace` compiles clean across all 14 crates
 listed above against the current state of all three dependency repos;
 `cargo test --workspace` passes 56/56, genuinely exercising the boundary —
-`input/` drives SHER-Input's real `InputService` (not a local
+`input/` drives SHER-INPUT's real `InputService` (not a local
 reimplementation), and `outputs/` deliberately does **not** instantiate
-`gpu_driver::GPUDriver` from SHER-Kernel, only consuming its `Connector`/
+`gpu_driver::GPUDriver` from SHER-KERNEL, only consuming its `Connector`/
 `DisplayMode` value types, since SHER-Graphics's `graphics_runtime` is the
 crate that actually owns and drives the GPU driver. This ownership split
 is the concrete form of this repo's "never instantiate a driver another
@@ -164,13 +164,13 @@ this repo's source and found none.
 ## Known gaps (external critique, verified)
 
 Two items from the same cross-repo critique pass that fixed real gaps in
-`SHER-Kernel` (lock-free/zero-copy IPC ring buffer) and `SHER-Graphics`
+`SHER-KERNEL` (lock-free/zero-copy IPC ring buffer) and `SHER-Graphics`
 (driver panic containment) were also flagged against this repo. Verified
 against the actual code rather than assumed:
 
 - **"Formalize IPC/message passing ... for framebuffers/input events" —
   doesn't apply to this repo as stated, by design.** `sher_core::ipc::IpcBus`
-  (SHER-Kernel) is now a real lock-free, bounded, zero-copy (`Arc<[u8]>`
+  (SHER-KERNEL) is now a real lock-free, bounded, zero-copy (`Arc<[u8]>`
   payload) ring buffer — but this repo doesn't depend on `sher_core` and
   doesn't call it anywhere (grepped the whole tree; zero matches). That's
   not an oversight: per this repo's boundary discipline (see "Cross-repo
@@ -182,7 +182,7 @@ against the actual code rather than assumed:
   framebuffers in the first place. Input events already flow through a
   different, real mechanism: `input/` subscribes to
   `sher_input_core::InputService`'s `tokio::sync::broadcast` channel
-  (SHER-Input's own, not a local reimplementation) — a genuine, audited,
+  (SHER-INPUT's own, not a local reimplementation) — a genuine, audited,
   in-process broadcast primitive, not a naive unbounded queue. Grepped
   `compositor/`, `surfaces/`, and `scene/` for any internal channel/
   `VecDeque`/`Vec<u8>`-based message passing of its own: none exists, so
@@ -194,7 +194,7 @@ against the actual code rather than assumed:
   to direct scene-graph nodes" — real, intended, not built yet.**
   `SHER-Display` and `SHER-Aurora` are meant to work hand in hand (Aurora as
   the primary shell on top of this compositor — see `ROADMAP.md` Phase 5),
-  as is true of the whole family from `SHER-Kernel` through `SHER-Aurora` —
+  as is true of the whole family from `SHER-KERNEL` through `SHER-Aurora` —
   one interdependent stack at different stages of readiness, not five
   unrelated repos. Today there's genuinely zero Cargo-level coupling
   between this repo and Aurora (no dependency, no shared types, no
@@ -211,10 +211,10 @@ against the actual code rather than assumed:
 ## Building
 
 Prerequisites: Rust 1.75+, with
-[`SHER-Kernel`](https://github.com/Mullassery/SHER-KERNEL),
+[`SHER-KERNEL`](https://github.com/Mullassery/SHER-KERNEL),
 [`SHER-Graphics`](https://github.com/Mullassery/SHER-Graphics), and
-[`SHER-Input`](https://github.com/Mullassery/SHER-INPUT) checked out as
-**sibling directories** (`../SHER-Kernel`, `../SHER-Graphics`, `../SHER-Input`
+[`SHER-INPUT`](https://github.com/Mullassery/SHER-INPUT) checked out as
+**sibling directories** (`../SHER-KERNEL`, `../SHER-Graphics`, `../SHER-INPUT`
 relative to this repo) — `sher_common`, `gpu_driver`, `wayland_server`,
 `sher_input_core`, and the SHER-Graphics crates are consumed via relative
 path dependencies, not published crates yet.
@@ -236,8 +236,8 @@ cargo test --workspace
 - The `crates/` layout migration and the `sher_display_protocol` /
   `sher_display_backend` / `sher_display_linux` split are an open decision
   in `ROADMAP.md` Phase 0, not yet executed.
-- This repo is not published as crates; it depends on `SHER-Kernel`,
-  `SHER-Graphics`, and `SHER-Input` via relative path dependencies, so it
+- This repo is not published as crates; it depends on `SHER-KERNEL`,
+  `SHER-Graphics`, and `SHER-INPUT` via relative path dependencies, so it
   only builds if those repos are checked out as sibling directories — there
   is no standalone build today.
 - No open GitHub issues and no `TODO`/`FIXME` markers in the source as of

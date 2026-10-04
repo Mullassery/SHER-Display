@@ -12,7 +12,7 @@ directly from `Cargo.toml` dependency declarations (real, checked) and
 
 ```mermaid
 graph TB
-    subgraph Kernel["SHER-Kernel"]
+    subgraph Kernel["SHER-KERNEL"]
         sher_common["sher_common"]
         sher_objectmodel["sher_objectmodel"]
         gpu_driver["gpu_driver"]
@@ -26,7 +26,7 @@ graph TB
         graphics_compat["graphics_compat"]
     end
 
-    subgraph Input["SHER-Input (sibling repo)"]
+    subgraph Input["SHER-INPUT (sibling repo)"]
         sher_input_core["sher_input_core\n(InputService, CaptureRegistry)"]
         sher_input_test["sher_input_test\n(SimulatedController, test-only)"]
     end
@@ -67,9 +67,9 @@ it does not.
 
 | Subsystem | Owns | Must NOT own |
 |---|---|---|
-| SHER-Kernel | hardware, memory, scheduling, low-level IPC/transport, device primitives | desktop compositor policy |
+| SHER-KERNEL | hardware, memory, scheduling, low-level IPC/transport, device primitives | desktop compositor policy |
 | SHER-Graphics | GPU abstraction, rendering contexts, GPU sync, the one `GPUDriver` instance | window focus, desktop policy |
-| SHER-Input | device lifecycle, canonical event stream, keyboard-layout mapping, capture enforcement | which application/window an event belongs to |
+| SHER-INPUT | device lifecycle, canonical event stream, keyboard-layout mapping, capture enforcement | which application/window an event belongs to |
 | **SHER-Display** | surfaces, windows, buffers, outputs, compositor, composition, frame scheduling, damage, focus, coordinate transforms, input-event *routing* | rendering execution, desktop visual policy |
 | Aurora | panels, launcher, widgets, desktop policy, visual language | compositor/window-management mechanism |
 
@@ -87,7 +87,7 @@ crate's `Cargo.toml`, not an idealized target.
 
 ```mermaid
 graph TB
-    common["sher_common\n(SHER-Kernel, external)"]
+    common["sher_common\n(SHER-KERNEL, external)"]
 
     scene["scene\ngeometry + z-ordered scene graph"]
     surfaces["surfaces\nbuffer/damage/commit lifecycle"]
@@ -105,9 +105,9 @@ graph TB
     compat_xwayland["compatibility/xwayland\nX11 id <-> surface id"]
     clipboard["clipboard\n(manifest only, not in\nworkspace members yet)"]
 
-    gpu_driver_ext["gpu_driver\n(SHER-Kernel, external —\nfacts only, never owned)"]
-    wayland_server_ext["wayland_server\n(SHER-Kernel, external)"]
-    input_core_ext["sher_input_core\n(SHER-Input, external)"]
+    gpu_driver_ext["gpu_driver\n(SHER-KERNEL, external —\nfacts only, never owned)"]
+    wayland_server_ext["wayland_server\n(SHER-KERNEL, external)"]
+    input_core_ext["sher_input_core\n(SHER-INPUT, external)"]
 
     scene --> common
     surfaces --> common

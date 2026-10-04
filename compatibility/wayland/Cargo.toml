@@ -5,7 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Wayland compatibility boundary: translates wayland_server::WaylandTransport (SHER-Kernel) protocol events into SHER-Display's surface/window/compositor state (spec section 28, 32)"
+description = "Wayland compatibility boundary: translates wayland_server::WaylandTransport (SHER-KERNEL) protocol events into SHER-Display's surface/window/compositor state (spec section 28, 32)"
 
 [dependencies]
 sher_common = { workspace = true }

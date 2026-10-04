@@ -4,7 +4,7 @@
 
 ## Boundary check
 
-- [ ] This does not instantiate a driver or hardware handle already owned by SHER-Kernel or SHER-Graphics (see VISION.md's "Ownership boundaries").
+- [ ] This does not instantiate a driver or hardware handle already owned by SHER-KERNEL or SHER-Graphics (see VISION.md's "Ownership boundaries").
 - [ ] If this touches `input/`, it goes through `sher_input_core::InputService`, not a local reimplementation.
 
 ## Testing

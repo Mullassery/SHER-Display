@@ -20,7 +20,7 @@ contradicts it.
 - `grep` for `TODO`/`FIXME`/`XXX`/`unimplemented!`/`todo!`/`#[allow(` across
   all `*.rs` — zero matches. Confirms README's "no TODO/FIXME markers"
   claim.
-- These checks all ran with `SHER-Kernel`, `SHER-Graphics`, and `SHER-Input`
+- These checks all ran with `SHER-KERNEL`, `SHER-Graphics`, and `SHER-INPUT`
   present as real sibling directories on the local machine (not stubbed),
   so this is a genuine from-scratch verification, not a claim taken from
   prior commit messages.
@@ -147,7 +147,7 @@ grep -rn "GPUDriver::new\|InputDriver::new" --include='*.rs' .
 Zero matches outside of comments/doc references in `VISION.md` (not `.rs`
 files). **No architecture-boundary violation found** — `outputs/` does not
 instantiate `gpu_driver::GPUDriver`, and no crate in this repo constructs a
-driver/hardware handle owned by SHER-Kernel or SHER-Graphics. This confirms
+driver/hardware handle owned by SHER-KERNEL or SHER-Graphics. This confirms
 (does not merely repeat) the claim in README.md's "Cross-repo compatibility"
 section and VISION.md's "GPUDriver ownership decision."
 

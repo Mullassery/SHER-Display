@@ -15,19 +15,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # This repo is consumed via relative path dependencies
-      # (../SHER-Kernel/crates/..., ../SHER-Graphics/crates/...,
-      # ../SHER-Input/...), so all three must be checked out as sibling
-      # directories under the same workspace root as SHER-Display.
+      # (../SHER-KERNEL/crates/..., ../SHER-Graphics/crates/...,
+      # ../SHER-INPUT/...), so all three must be checked out as sibling
+      # directories under the same workspace root as SHER-Display, using
+      # the exact casing of the real repo names (SHER-KERNEL, SHER-INPUT
+      # are all-caps on GitHub) -- `path:` previously used "SHER-Kernel"/
+      # "SHER-Input", which only matched Cargo.toml by accident of this
+      # runner being case-sensitive in the *other* direction from a
+      # contributor's local macOS clone. Cargo.toml now points at the
+      # real casing directly, so this must too.
       - name: Checkout SHER-Display
         uses: actions/checkout@v4
         with:
           path: SHER-Display
 
-      - name: Checkout SHER-Kernel
+      - name: Checkout SHER-KERNEL
         uses: actions/checkout@v4
         with:
           repository: Mullassery/SHER-KERNEL
-          path: SHER-Kernel
+          path: SHER-KERNEL
 
       - name: Checkout SHER-Graphics
         uses: actions/checkout@v4
@@ -35,11 +41,11 @@ jobs:
           repository: Mullassery/SHER-Graphics
           path: SHER-Graphics
 
-      - name: Checkout SHER-Input
+      - name: Checkout SHER-INPUT
         uses: actions/checkout@v4
         with:
           repository: Mullassery/SHER-INPUT
-          path: SHER-Input
+          path: SHER-INPUT
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable

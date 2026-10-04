@@ -10,7 +10,7 @@ violated).
 
 - Read [VISION.md](VISION.md)'s "Ownership boundaries" section first. The
   single most common mistake in this codebase's history has been a crate
-  instantiating a driver or hardware handle that SHER-Kernel or SHER-Graphics
+  instantiating a driver or hardware handle that SHER-KERNEL or SHER-Graphics
   already owns (see the `GPUDriver` ownership decision documented there). If
   you're about to write `gpu_driver::GPUDriver::new(...)`,
   `input_driver::InputDriver::new(...)`, or anything that constructs a
@@ -21,21 +21,27 @@ violated).
   without discussing it in an issue first — several structural decisions
   (the `crates/` layout migration, the `sher_display_backend` trait) are
   still open and unstarted work should not pre-empt them.
-- This repo does not build standalone. You need `SHER-Kernel`,
-  `SHER-Graphics`, and `SHER-Input` checked out as sibling directories (see
+- This repo does not build standalone. You need `SHER-KERNEL`,
+  `SHER-Graphics`, and `SHER-INPUT` checked out as sibling directories (see
   README.md's "Building" section).
 
 ## Development setup
 
 ```bash
-git clone https://github.com/Mullassery/SHER-KERNEL ../SHER-Kernel
-git clone https://github.com/Mullassery/SHER-Graphics ../SHER-Graphics
-git clone https://github.com/Mullassery/SHER-INPUT ../SHER-Input
+git clone https://github.com/Mullassery/SHER-KERNEL
+git clone https://github.com/Mullassery/SHER-Graphics
+git clone https://github.com/Mullassery/SHER-INPUT
 git clone https://github.com/Mullassery/SHER-Display
 cd SHER-Display
 cargo build --workspace
 cargo test --workspace
 ```
+
+Note: don't rename the sibling directories on clone. `Cargo.toml`'s path
+dependencies point at `../SHER-KERNEL` and `../SHER-INPUT` (matching the
+real repo names exactly) specifically so a plain `git clone` with no
+custom target name works on case-sensitive filesystems (every stock Linux
+install) as well as case-insensitive ones (macOS/APFS).
 
 ## Before opening a PR
 
