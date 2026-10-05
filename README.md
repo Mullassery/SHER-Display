@@ -1,5 +1,9 @@
 # SHER Display
 
+[![CI](https://github.com/Mullassery/SHER-Display/actions/workflows/ci.yml/badge.svg)](https://github.com/Mullassery/SHER-Display/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
+[![Rust Edition 2021](https://img.shields.io/badge/edition-2021-orange.svg)](Cargo.toml)
+
 The native display server, compositor, and window-management subsystem for
 [SHER Kernel](https://github.com/Mullassery/SHER-KERNEL),
 [SHER Graphics](https://github.com/Mullassery/SHER-Graphics), and
@@ -15,6 +19,24 @@ compositor: Wayland and X11 (via XWayland) applications are supported through
 compatibility layers at the edge. Underneath them, SHER Display defines its
 own native surface, window, and compositor model — this is not a
 reimplementation of `wl_display` wearing a different name.
+
+**Contents:** [Use cases](#use-cases) · [Why this exists](#why-this-exists) ·
+[What's actually here](#whats-actually-here-not-just-planned) ·
+[Vision & plan](#the-vision-and-the-plan) · [Workspace](#workspace) ·
+[Cross-repo compatibility](#cross-repo-compatibility-verified-whole-family) ·
+[Linux/Ubuntu compatibility](#linux--ubuntu-compatibility) ·
+[Known gaps](#known-gaps-external-critique-verified) · [Building](#building) ·
+[Known limitations](#known-limitations)
+
+**The SHER family** (all repos under `github.com/Mullassery`): this repo depends directly
+on three of them (see [Cross-repo compatibility](#cross-repo-compatibility-verified-whole-family)
+below); linking the rest here too so the whole family is discoverable from any one of them:
+
+- [SHER-KERNEL](https://github.com/Mullassery/SHER-KERNEL) — foundation types, object model, capability security
+- [SHER-Process-Explorer](https://github.com/Mullassery/SHER-Process-Explorer) — Linux process telemetry/investigation tool
+- [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) — canonical input event normalization
+- [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) — GPU abstraction + Vulkan backend
+- [SHER-Aurora](https://github.com/Mullassery/SHER-Aurora) — GTK4 design system / UI toolkit
 
 ## Use cases
 
@@ -226,23 +248,24 @@ cargo test --workspace
 
 ## Linux / Ubuntu compatibility
 
-Verified 2026-10 (see org-wide `SHER-LINUX-RUST-COMPATIBILITY.md`):
+Verified 2026-10 (see the org-wide `SHER-LINUX-RUST-COMPATIBILITY.md` audit):
 
-- **Ubuntu**: 24.04 LTS and 26.04 LTS, confirmed via real Docker containers (full 56-test
-  suite run, not just `cargo check`).
-- **Architecture**: x86_64 and arm64, both confirmed (arm64 native, x86_64 emulated).
-- **Fixed this pass**: sibling-path dependencies used mixed-case `../SHER-Kernel`/
-  `../SHER-Input` in `Cargo.toml`, silently fine on case-insensitive macOS/APFS but breaking
-  `cargo check` outright on any case-sensitive Linux filesystem — i.e. every real Ubuntu
-  install. Corrected to the real `SHER-KERNEL`/`SHER-INPUT` casing; CI's checkout `path:`
-  values and `CONTRIBUTING.md` had the same stale casing and were fixed too.
-- **Boundary discipline, re-verified**: this repo never instantiates a GPU or input driver
-  that SHER-Graphics/SHER-KERNEL already own — `outputs/` only imports `gpu_driver`'s data
-  types (`Connector`, `DisplayMode`), never `GPUDriver::new(...)`.
-- **Known limitations**: no headless mode exists yet (honestly disclosed future work, not a
-  hidden gap); this repo does not yet call into SHER-Graphics's render path at all (Phase 3
-  not started), so there is no live GPU/software-renderer performance characteristic to
-  measure yet either way.
+| | |
+|---|---|
+| **Ubuntu** | 24.04 LTS and 26.04 LTS, confirmed via real Docker containers — full 56-test suite run, not just `cargo check` |
+| **Architecture** | x86_64 and arm64, both confirmed (arm64 native, x86_64 emulated) |
+| **Rust** | stable, edition 2021, no special MSRV requirement |
+
+**Fixed this pass:** sibling-path dependencies used mixed-case `../SHER-Kernel`/
+`../SHER-Input` in `Cargo.toml` — silently fine on case-insensitive macOS/APFS, but this
+broke `cargo check` outright on any case-sensitive Linux filesystem, i.e. every real Ubuntu
+install. Corrected to the real `SHER-KERNEL`/`SHER-INPUT` casing; CI's checkout `path:`
+values and `CONTRIBUTING.md` had the same stale casing and were fixed too.
+
+Boundary discipline (never owning a driver a sibling repo already owns) was re-verified as
+part of this pass — see [Cross-repo compatibility](#cross-repo-compatibility-verified-whole-family)
+above for the detail. Headless mode and the GPU render-path wiring are future work, not a
+platform-specific gap — see [Known limitations](#known-limitations) below.
 
 ## Known limitations
 
