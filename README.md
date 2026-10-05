@@ -224,6 +224,26 @@ cargo build --workspace
 cargo test --workspace
 ```
 
+## Linux / Ubuntu compatibility
+
+Verified 2026-10 (see org-wide `SHER-LINUX-RUST-COMPATIBILITY.md`):
+
+- **Ubuntu**: 24.04 LTS and 26.04 LTS, confirmed via real Docker containers (full 56-test
+  suite run, not just `cargo check`).
+- **Architecture**: x86_64 and arm64, both confirmed (arm64 native, x86_64 emulated).
+- **Fixed this pass**: sibling-path dependencies used mixed-case `../SHER-Kernel`/
+  `../SHER-Input` in `Cargo.toml`, silently fine on case-insensitive macOS/APFS but breaking
+  `cargo check` outright on any case-sensitive Linux filesystem — i.e. every real Ubuntu
+  install. Corrected to the real `SHER-KERNEL`/`SHER-INPUT` casing; CI's checkout `path:`
+  values and `CONTRIBUTING.md` had the same stale casing and were fixed too.
+- **Boundary discipline, re-verified**: this repo never instantiates a GPU or input driver
+  that SHER-Graphics/SHER-KERNEL already own — `outputs/` only imports `gpu_driver`'s data
+  types (`Connector`, `DisplayMode`), never `GPUDriver::new(...)`.
+- **Known limitations**: no headless mode exists yet (honestly disclosed future work, not a
+  hidden gap); this repo does not yet call into SHER-Graphics's render path at all (Phase 3
+  not started), so there is no live GPU/software-renderer performance characteristic to
+  measure yet either way.
+
 ## Known limitations
 
 - Not yet scaffolded: clipboard, drag-and-drop, screenshot, recording,
