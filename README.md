@@ -3,6 +3,7 @@
 [![CI](https://github.com/Mullassery/SHER-Display/actions/workflows/ci.yml/badge.svg)](https://github.com/Mullassery/SHER-Display/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![Rust Edition 2021](https://img.shields.io/badge/edition-2021-orange.svg)](Cargo.toml)
+[![Grapify](https://img.shields.io/badge/Grapify-Code%20Scan-purple)](https://grapify.ai)
 
 The native display server, compositor, and window-management subsystem for
 [SHER Kernel](https://github.com/Mullassery/SHER-KERNEL),
