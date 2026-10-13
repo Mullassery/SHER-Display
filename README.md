@@ -1,292 +1,97 @@
 # SHER Display
 
+The native display server, compositor, and window-management subsystem for the SHER OS family.
+
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 [![CI](https://github.com/Mullassery/SHER-Display/actions/workflows/ci.yml/badge.svg)](https://github.com/Mullassery/SHER-Display/actions/workflows/ci.yml)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![Rust Edition 2021](https://img.shields.io/badge/edition-2021-orange.svg)](Cargo.toml)
-[![Graphify](https://img.shields.io/badge/Graphify-knowledge%20graph-blue)](https://github.com/Graphify-Labs/graphify)
 
-The native display server, compositor, and window-management subsystem for
-[SHER Kernel](https://github.com/Mullassery/SHER-KERNEL),
-[SHER Graphics](https://github.com/Mullassery/SHER-Graphics), and
-[SHER Input](https://github.com/Mullassery/SHER-INPUT) — the layer that turns
-rendered application surfaces and normalized device activity into an actual,
-interactive desktop.
+## What it is
 
-> Compatibility at the boundary, freedom underneath.
+SHER Display is the layer that turns rendered application surfaces and normalized device activity — from [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) and [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) — into an actual, interactive desktop: a compositor, a scene graph, window and workspace management, focus routing, cursor handling, session state, and a capability-based security boundary.
 
-The same philosophy [Aurora](https://github.com/Mullassery/aurora) applies to
-the desktop and SHER Graphics applies to the GPU, applied here to the
-compositor: Wayland and X11 (via XWayland) applications are supported through
-compatibility layers at the edge. Underneath them, SHER Display defines its
-own native surface, window, and compositor model — this is not a
-reimplementation of `wl_display` wearing a different name.
+It is a 14-crate Rust workspace (about 56 tests, zero failures) built around a native surface/window/compositor model rather than a renamed `wl_display`. Wayland (and X11 via XWayland) compatibility is layered at the edge, where it belongs; underneath, the native model is designed for what a modern desktop needs — structured window operations an AI agent can call directly instead of simulating mouse and keyboard.
 
-**Contents:** [Use cases](#use-cases) · [Why this exists](#why-this-exists) ·
-[What's actually here](#whats-actually-here-not-just-planned) ·
-[Vision & plan](#the-vision-and-the-plan) · [Workspace](#workspace) ·
-[Cross-repo compatibility](#cross-repo-compatibility-verified-whole-family) ·
-[Linux/Ubuntu compatibility](#linux--ubuntu-compatibility) ·
-[Known gaps](#known-gaps-external-critique-verified) · [Building](#building) ·
-[Known limitations](#known-limitations)
+## Features / Highlights
 
-**The SHER family** (all repos under `github.com/Mullassery`): this repo depends directly
-on three of them (see [Cross-repo compatibility](#cross-repo-compatibility-verified-whole-family)
-below); linking the rest here too so the whole family is discoverable from any one of them:
+- **Native compositor pipeline** — damage tracking and adaptive per-output scheduling (`compositor`), a z-ordered scene graph (`scene`), application surface lifecycle (`surfaces`), window state/layout/snap (`windows`), and virtual workspaces (`workspaces`).
+- **Multi-output display policy** — mirrors SHER-Graphics's connector/mode facts without re-owning the GPU (`outputs`).
+- **Input routing with isolation by construction** — `sher_display_input` drives a real `sher_input_core::InputService` (no local mock), and `RoutedEvent` has no variant that can carry an arbitrary surface id, so an unfocused application has no code path to another application's keystrokes.
+- **Focus, shortcuts, cursor, and security** — focus-aware routing and global shortcuts (`input`), hardware/software cursor negotiation (`cursor`), and time-bound permission grants for capture/recording/injection/clipboard (`security`).
+- **Explicit session state machine** — login, lock, restart, and multi-seat transitions that reject illegal state changes instead of coercing them (`session`).
+- **Fail-closed diagnostics** — frame-time and input-latency telemetry behind a debug gate that defaults to off (`diagnostics`).
+- **Wayland and XWayland compatibility seams** — Wayland client lifecycle mapped to the native compositor/window manager with no orphaned surfaces (`compatibility/wayland`); a deliberately thin X11 window ↔ surface-id mapping (`compatibility/xwayland`).
+- **One serializable settings model** (`configuration`).
 
-- [SHER-KERNEL](https://github.com/Mullassery/SHER-KERNEL) — foundation types, object model, capability security
-- [SHER-Process-Explorer](https://github.com/Mullassery/SHER-Process-Explorer) — Linux process telemetry/investigation tool
-- [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) — canonical input event normalization
-- [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) — GPU abstraction + Vulkan backend
-- [SHER-Aurora](https://github.com/Mullassery/SHER-Aurora) — GTK4 design system / UI toolkit
+## Who it's for / Use cases
 
-## Use cases
+- **Prototyping a compositor and window-management model where AI-agent control is a first-class primitive**, rather than simulated keyboard/mouse input bolted onto an existing display server.
+- **Studying cross-repo boundary discipline** in a multi-crate Rust workspace — the `GPUDriver` ownership fix and the documented "confirmed real but deliberately unwired" seam in `VISION.md` are worked examples.
+- **Testing an input → compositor → window-routing pipeline** without real hardware, via SHER-INPUT's shipped `SimulatedController`.
 
-- **Prototyping a compositor/window-management model with AI-agent control
-  as a first-class primitive**, not simulated mouse/keyboard input bolted
-  onto an existing display server.
-- **Studying a concrete example of cross-repo boundary discipline** in a
-  multi-crate Rust workspace — the `GPUDriver` ownership fix and the
-  documented "confirmed real but deliberately left unwired" seam (see
-  "What's actually here" below) are worked examples, not just claims.
-- **Not yet a good fit for:** a usable desktop — clipboard, drag-and-drop,
-  screenshot, recording, animation, headless mode, and AI/agent APIs are
-  all not yet scaffolded (see [Known limitations](#known-limitations)).
-  This also isn't a standalone build — it requires `SHER-KERNEL`,
-  `SHER-Graphics`, and `SHER-INPUT` checked out as sibling directories.
+## What it is not
 
-## Why this exists
+- **Not yet a usable desktop.** Clipboard, drag-and-drop, screenshot, recording, animation, headless mode, and AI/agent APIs are not scaffolded. `clipboard/Cargo.toml` exists as a manifest-only stub with no `src/`, and is not yet in the workspace `members` list; the other listed features have no directory or manifest at all.
+- **Not a standalone build.** It depends on `SHER-KERNEL`, `SHER-Graphics`, and `SHER-INPUT` via relative path dependencies, so all four must be checked out as sibling directories.
+- **Not a reimplementation of Wayland as its native model.** Wayland/X11 are compatibility layers at the edge; the native surface/window/compositor model is its own design.
+- **Not its own GPU owner.** `outputs/` consumes SHER-Graphics's value types only and never instantiates `gpu_driver::GPUDriver` — SHER-Graphics's `graphics_runtime` owns and drives the GPU.
+- **Not published as crates.** No registry packages; path dependencies only.
+- **Not a finished security boundary.** Permission grants are time-bound and fail closed, but this is pre-alpha scaffolding, not a hardened, audited display server.
 
-Every general-purpose Linux compositor inherits thirty years of Wayland's
-API-versioning baggage as its *native* interface, then bolts application
-isolation, AI-agent control, and headless operation on top as afterthoughts.
-SHER Display inverts that: the native model is designed for what a modern
-desktop actually needs — structured window operations an AI agent can call
-directly instead of simulating mouse and keyboard, security boundaries
-enforced by construction instead of by convention, a headless mode that isn't
-a hack — and Wayland/X11 compatibility is the thing bolted on at the edge,
-where it belongs.
+## Project status
 
-## What's actually here, not just planned
+- **Implemented and tested (14 crates, 56 tests):** `compositor`, `scene`, `surfaces`, `windows`, `workspaces`, `outputs`, `input`, `cursor`, `security`, `compatibility/wayland`, `compatibility/xwayland`, `session`, `diagnostics`, `configuration`.
+- **Not yet scaffolded:** clipboard (manifest-only stub), drag-and-drop, screenshot, recording, animation, headless mode, AI/agent APIs (see [`ROADMAP.md`](./ROADMAP.md)).
+- **Open decision, not executed:** a migration to a leaner `crates/` layout plus a native `sher_display_protocol` and a `sher_display_backend`/`sher_display_linux` split (tracked in `ROADMAP.md` Phase 0).
+- **No tagged releases yet** — everything is unreleased, pre-alpha (see [`CHANGELOG.md`](./CHANGELOG.md)).
 
-This is an early scaffold, and the numbers below are exact, not rounded up:
-14 crates, 56 tests, zero failures, verified before every commit.
+## Installation
 
-A few things worth looking at directly rather than taking on faith:
+Requires Rust 1.75+, with [`SHER-KERNEL`](https://github.com/Mullassery/SHER-KERNEL), [`SHER-Graphics`](https://github.com/Mullassery/SHER-Graphics), and [`SHER-INPUT`](https://github.com/Mullassery/SHER-INPUT) checked out as **sibling directories** (`../SHER-KERNEL`, `../SHER-Graphics`, `../SHER-INPUT` relative to this repo), because those crates are consumed via relative path dependencies, not published packages:
 
-- **A real cross-repo integration, exercised end to end, not just declared
-  as a dependency.** `sher_display_input` drives an actual
-  `sher_input_core::InputService` — SHER-INPUT's real orchestrator — through
-  the hermetic `SimulatedController` SHER-INPUT itself ships for exactly
-  this purpose, and asserts on the routed output. No SHER-Display-authored
-  mock stands in for the sibling project.
-- **Isolation enforced by the type system, not a permission check that can
-  be forgotten.** `sher_display_input::RoutedEvent` has no variant that can
-  carry an arbitrary surface id — only the tracked focus target. An
-  unfocused application has no code path to another application's
-  keystrokes; see `input/src/lib.rs`.
-- **State machines that reject illegal transitions instead of coercing
-  them.** `sher_display_session` will not let you unlock a session that
-  isn't locked, or log in twice — see `session/src/lib.rs`.
-- **Security that fails closed.** `sher_display_security`'s permission
-  grants are time-bound and read as denied the instant they expire, without
-  needing an explicit revoke; `sher_display_diagnostics`'s debug-mode gate
-  defaults to off and has to be turned on to return anything.
-- **Real cross-repo boundary violations, caught and fixed in the open, not
-  quietly rewritten out of history.** `sher_display_outputs` originally
-  instantiated its own `GPUDriver`, duplicating SHER-Graphics's existing
-  ownership of that hardware state — two unsynchronized views of the same
-  display. Documented in `VISION.md` under "The SHER-Graphics `GPUDriver`
-  ownership decision," because the fix matters more as a precedent than as
-  a diff. The same document also records where a *matching* seam
-  (SHER-Graphics's hardware-cursor primitives) was confirmed real but
-  deliberately left unwired, because wiring it now would mean backing into
-  a bigger architectural decision as a side effect.
-
-## The vision and the plan
-
-- [`VISION.md`](./VISION.md) — subsystem ownership boundaries (who owns
-  what, and just as importantly, who must not), the display model, protocol
-  and backend philosophy, and what "done" actually means.
-- [`ROADMAP.md`](./ROADMAP.md) — the full phased plan, with an honest status
-  marker on every line: built and tested, partially built, or not started.
-  No item claims more than the code backs up.
-- [`ROADMAP_HONEST.md`](./ROADMAP_HONEST.md) — technical-debt inventory,
-  CI/tooling gaps, and what was independently re-verified vs. carried
-  forward from a prior pass. Supplements `ROADMAP.md`; doesn't replace it.
-- [`docs/architecture/README.md`](./docs/architecture/README.md) — Mermaid
-  diagrams of the cross-repo layering and this repo's internal crate
-  dependency graph.
-
-## Contributing
-
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup and the pre-PR
-checklist, [`SECURITY.md`](./SECURITY.md) to report a security issue
-privately, and [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md). Change history
-is in [`CHANGELOG.md`](./CHANGELOG.md) (no tagged releases yet — everything
-is unreleased, pre-alpha).
-
-## Workspace
-
-```
-compositor/               frame pipeline: damage tracking, adaptive per-output scheduling
-scene/                    geometry primitives + z-ordered scene graph
-surfaces/                 application surface state: buffer attach, damage, commit lifecycle
-windows/                  window state: layout modes, activation, snap, modal/transient
-workspaces/               virtual workspaces: static + dynamic, independent per-output switching
-outputs/                  multi-monitor: mirrors SHER-Graphics's connector/mode facts into display policy
-input/                    focus-aware routing, global shortcuts, isolation by construction
-cursor/                   hardware/software cursor negotiation, theming, accessibility sizing
-security/                 time-bound permission grants for capture, recording, injection, clipboard
-session/                  explicit session state machine: login, lock, restart, multi-seat
-diagnostics/              frame-time/input-latency telemetry, fail-closed debug-mode gate
-configuration/            one serializable, machine-readable settings model
-compatibility/wayland/    Wayland client lifecycle -> Compositor/WindowManager, no orphaned surfaces
-compatibility/xwayland/   X11 window <-> surface-id mapping, deliberately thin
+```bash
+git clone https://github.com/Mullassery/SHER-KERNEL.git
+git clone https://github.com/Mullassery/SHER-Graphics.git
+git clone https://github.com/Mullassery/SHER-INPUT.git
+git clone https://github.com/Mullassery/SHER-Display.git
+cd SHER-Display
+cargo build --workspace
 ```
 
-Not yet scaffolded (see `ROADMAP.md`): clipboard, drag-and-drop, screenshot,
-recording, animation, headless mode, AI/agent APIs.
-
-A structural migration to a leaner `crates/` layout — fewer, larger crates,
-plus a native `sher_display_protocol` and a `sher_display_backend`/
-`sher_display_linux` split to isolate Ubuntu-specific code — is an open
-decision tracked in `ROADMAP.md` Phase 0, not yet executed.
-
-## Cross-repo compatibility (verified, whole family)
-
-This repo is the most cross-repo-coupled member of a 5-repo family under
-the Mullassery org, expected to be cloned as sibling directories:
-`SHER-KERNEL`, `SHER-Graphics`, `SHER-Display` (this repo), `SHER-INPUT`,
-and `Aurora` (GitHub: `SHER-Aurora`). Actual Cargo-level coupling,
-confirmed by reading every `Cargo.toml` in the family:
-
-- **SHER-KERNEL** — this repo depends on it for `sher_common`,
-  `sher_objectmodel`, `gpu_driver`, `wayland_server`, via relative path.
-- **SHER-Graphics** — this repo depends on it for `graphics_api`,
-  `gpu_abstraction`, `graphics_runtime`, `graphics_compat`.
-- **SHER-INPUT** — this repo depends on it for `sher_input_core`,
-  `sher_input_test`.
-- **Aurora** — zero coupling; not part of this repo's build.
-
-All three deps are relative paths (`../SHER-KERNEL/...`,
-`../SHER-Graphics/...`, `../SHER-INPUT/...`), so this repo's build only
-resolves when all four are sibling directories. Verified current: a
-from-scratch `cargo build --workspace` compiles clean across all 14 crates
-listed above against the current state of all three dependency repos;
-`cargo test --workspace` passes 56/56, genuinely exercising the boundary —
-`input/` drives SHER-INPUT's real `InputService` (not a local
-reimplementation), and `outputs/` deliberately does **not** instantiate
-`gpu_driver::GPUDriver` from SHER-KERNEL, only consuming its `Connector`/
-`DisplayMode` value types, since SHER-Graphics's `graphics_runtime` is the
-crate that actually owns and drives the GPU driver. This ownership split
-is the concrete form of this repo's "never instantiate a driver another
-subsystem already owns" boundary discipline, and it holds as of this
-check — grepped for any other `GPUDriver`/driver-owning construction in
-this repo's source and found none.
-
-## Known gaps (external critique, verified)
-
-Two items from the same cross-repo critique pass that fixed real gaps in
-`SHER-KERNEL` (lock-free/zero-copy IPC ring buffer) and `SHER-Graphics`
-(driver panic containment) were also flagged against this repo. Verified
-against the actual code rather than assumed:
-
-- **"Formalize IPC/message passing ... for framebuffers/input events" —
-  doesn't apply to this repo as stated, by design.** `sher_core::ipc::IpcBus`
-  (SHER-KERNEL) is now a real lock-free, bounded, zero-copy (`Arc<[u8]>`
-  payload) ring buffer — but this repo doesn't depend on `sher_core` and
-  doesn't call it anywhere (grepped the whole tree; zero matches). That's
-  not an oversight: per this repo's boundary discipline (see "Cross-repo
-  compatibility" above), `outputs/` deliberately does not own
-  `gpu_driver::GPUDriver` or any framebuffer/pixel-buffer state —
-  `SHER-Graphics`'s `graphics_runtime::PresentationBridge` is the sole
-  owner of that. There is no framebuffer transport into this repo to
-  formalize, because this repo was never supposed to receive raw
-  framebuffers in the first place. Input events already flow through a
-  different, real mechanism: `input/` subscribes to
-  `sher_input_core::InputService`'s `tokio::sync::broadcast` channel
-  (SHER-INPUT's own, not a local reimplementation) — a genuine, audited,
-  in-process broadcast primitive, not a naive unbounded queue. Grepped
-  `compositor/`, `surfaces/`, and `scene/` for any internal channel/
-  `VecDeque`/`Vec<u8>`-based message passing of its own: none exists, so
-  there's no framebuffer- or event-scale in-repo data-passing path that's
-  currently naive and would benefit from the ring-buffer fix applied
-  upstream. Net: nothing to change here without violating the ownership
-  split this repo is built around.
-- **"Bridge UI toolkit to display server ... Aurora widgets compile down
-  to direct scene-graph nodes" — real, intended, not built yet.**
-  `SHER-Display` and `SHER-Aurora` are meant to work hand in hand (Aurora as
-  the primary shell on top of this compositor — see `ROADMAP.md` Phase 5),
-  as is true of the whole family from `SHER-KERNEL` through `SHER-Aurora` —
-  one interdependent stack at different stages of readiness, not five
-  unrelated repos. Today there's genuinely zero Cargo-level coupling
-  between this repo and Aurora (no dependency, no shared types, no
-  scene-graph API surface exposed by this repo for anything to compile
-  down to) — that's a *sequencing* fact (this phase hasn't started; Aurora
-  currently renders through literal `gtk4::Button`/`gtk4::Entry` widgets),
-  not evidence the integration was abandoned or was never planned. Building
-  it means first designing this repo's scene-graph node API as a public
-  surface (nothing in `scene/` is exposed for an external toolkit to target
-  yet), then Aurora's rendering backend targeting it instead of GTK4 — real
-  two-repo work, correctly tracked as not-yet-started in `ROADMAP.md` Phase
-  5 rather than fabricated here.
-
-## Building
-
-Prerequisites: Rust 1.75+, with
-[`SHER-KERNEL`](https://github.com/Mullassery/SHER-KERNEL),
-[`SHER-Graphics`](https://github.com/Mullassery/SHER-Graphics), and
-[`SHER-INPUT`](https://github.com/Mullassery/SHER-INPUT) checked out as
-**sibling directories** (`../SHER-KERNEL`, `../SHER-Graphics`, `../SHER-INPUT`
-relative to this repo) — `sher_common`, `gpu_driver`, `wayland_server`,
-`sher_input_core`, and the SHER-Graphics crates are consumed via relative
-path dependencies, not published crates yet.
+## Quick start
 
 ```bash
 cargo build --workspace
 cargo test --workspace
 ```
 
-## Linux / Ubuntu compatibility
+## Usage
 
-Verified 2026-10 (see the org-wide `SHER-LINUX-RUST-COMPATIBILITY.md` audit):
+This is a library workspace with no runnable binary yet; it is exercised through its crates and tests. The most direct entry points are `sher_display_input` (focus-aware routing over a real SHER-INPUT pipeline), `sher_display_session` (session state machine), and `sher_display_security` (time-bound permission grants). See [`docs/architecture/README.md`](./docs/architecture/README.md) for the crate dependency graph.
 
-| | |
-|---|---|
-| **Ubuntu** | 24.04 LTS and 26.04 LTS, confirmed via real Docker containers — full 56-test suite run, not just `cargo check` |
-| **Architecture** | x86_64 and arm64, both confirmed (arm64 native, x86_64 emulated) |
-| **Rust** | stable, edition 2021, no special MSRV requirement |
+## Documentation
 
-**Fixed this pass:** sibling-path dependencies used mixed-case `../SHER-Kernel`/
-`../SHER-Input` in `Cargo.toml` — silently fine on case-insensitive macOS/APFS, but this
-broke `cargo check` outright on any case-sensitive Linux filesystem, i.e. every real Ubuntu
-install. Corrected to the real `SHER-KERNEL`/`SHER-INPUT` casing; CI's checkout `path:`
-values and `CONTRIBUTING.md` had the same stale casing and were fixed too.
+- [`VISION.md`](./VISION.md) — subsystem ownership boundaries, the display model, and protocol/backend philosophy
+- [`ROADMAP.md`](./ROADMAP.md) — the full phased plan with an honest status marker on every line
+- [`ROADMAP_HONEST.md`](./ROADMAP_HONEST.md) — technical-debt inventory and CI/tooling gaps
+- [`docs/architecture/README.md`](./docs/architecture/README.md) — Mermaid diagrams of cross-repo layering and internal crate dependencies
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — setup and the pre-PR checklist
+- [`SECURITY.md`](./SECURITY.md) — how to report a security issue privately
+- [`CHANGELOG.md`](./CHANGELOG.md) — change history
 
-Boundary discipline (never owning a driver a sibling repo already owns) was re-verified as
-part of this pass — see [Cross-repo compatibility](#cross-repo-compatibility-verified-whole-family)
-above for the detail. Headless mode and the GPU render-path wiring are future work, not a
-platform-specific gap — see [Known limitations](#known-limitations) below.
+## Contributing
 
-## Known limitations
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup and the pre-PR checklist, [`SECURITY.md`](./SECURITY.md) to report a security issue privately, and [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md). Change history is in [`CHANGELOG.md`](./CHANGELOG.md) (no tagged releases yet — everything is unreleased, pre-alpha).
 
-- Not yet scaffolded: clipboard, drag-and-drop, screenshot, recording,
-  animation, headless mode, AI/agent APIs (see the crate list above and
-  `ROADMAP.md`). `clipboard/Cargo.toml` exists as a manifest-only stub —
-  there is no `clipboard/src/` directory at all yet, not even an empty
-  one — and it is not in the workspace `members` list yet. Drag-and-drop,
-  screenshot, recording, animation, headless mode, and AI/agent APIs have
-  no directory or manifest in this repo at all, not even a stub.
-- The `crates/` layout migration and the `sher_display_protocol` /
-  `sher_display_backend` / `sher_display_linux` split are an open decision
-  in `ROADMAP.md` Phase 0, not yet executed.
-- This repo is not published as crates; it depends on `SHER-KERNEL`,
-  `SHER-Graphics`, and `SHER-INPUT` via relative path dependencies, so it
-  only builds if those repos are checked out as sibling directories — there
-  is no standalone build today.
-- No open GitHub issues and no `TODO`/`FIXME` markers in the source as of
-  this pass.
+## Related projects
+
+- [SHER-KERNEL](https://github.com/Mullassery/SHER-KERNEL) — AI-native operating-system kernel with zero-trust security
+- [SHER-Display](https://github.com/Mullassery/SHER-Display) — display server, compositor, and window manager for the SHER OS family
+- [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) — native graphics architecture (software GPU + Vulkan backend)
+- [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) — input subsystem that normalizes device activity into a canonical event stream
+- [SHER-Aurora](https://github.com/Mullassery/aurora) — GNOME design system for Rust
+- [SHER-Process-Explorer](https://github.com/Mullassery/SHER-Process-Explorer) — evidence-based Linux process explorer
+- [Browse all projects](https://github.com/Mullassery?tab=repositories)
 
 ## License
 
-This project is licensed under the [Apache License 2.0](LICENSE).
+This project is licensed under the [Apache License 2.0](./LICENSE).
