@@ -25,24 +25,24 @@ jobs:
       # contributor's local macOS clone. Cargo.toml now points at the
       # real casing directly, so this must too.
       - name: Checkout SHER-Display
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: SHER-Display
 
       - name: Checkout SHER-KERNEL
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Mullassery/SHER-KERNEL
           path: SHER-KERNEL
 
       - name: Checkout SHER-Graphics
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Mullassery/SHER-Graphics
           path: SHER-Graphics
 
       - name: Checkout SHER-INPUT
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Mullassery/SHER-INPUT
           path: SHER-INPUT
@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout SHER-Display
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
