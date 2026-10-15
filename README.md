@@ -82,15 +82,20 @@ This is a library workspace with no runnable binary yet; it is exercised through
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup and the pre-PR checklist, [`SECURITY.md`](./SECURITY.md) to report a security issue privately, and [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md). Change history is in [`CHANGELOG.md`](./CHANGELOG.md) (no tagged releases yet — everything is unreleased, pre-alpha).
 
-## Related projects
+## Part of the SHER OS family
 
-- [SHER-KERNEL](https://github.com/Mullassery/SHER-KERNEL) — AI-native operating-system kernel with zero-trust security
-- [SHER-Display](https://github.com/Mullassery/SHER-Display) — display server, compositor, and window manager for the SHER OS family
-- [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) — native graphics architecture (software GPU + Vulkan backend)
-- [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) — input subsystem that normalizes device activity into a canonical event stream
-- [SHER-Aurora](https://github.com/Mullassery/aurora) — GNOME design system for Rust
-- [SHER-Process-Explorer](https://github.com/Mullassery/SHER-Process-Explorer) — evidence-based Linux process explorer
-- [Browse all projects](https://github.com/Mullassery?tab=repositories)
+SHER-Display is part of the SHER OS family — an AI-native operating system built from scratch in Rust. The subsystems are designed to work together as a coherent OS stack.
+
+| Tool | Role | What it does |
+|---|---|---|
+| [SHER-KERNEL](https://github.com/Mullassery/SHER-KERNEL) | Kernel core | Core kernel scaffolding: object model, scheduling, memory, driver-lifecycle concepts, and a Linux Kernel Interface (LKI) compatibility layer. |
+| [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) | Graphics/GPU | GPU abstraction and rendering — software simulation plus a real, working Vulkan/MoltenVK backend. |
+| [SHER-Display](https://github.com/Mullassery/SHER-Display) | Display/compositor | **This project** — display server, compositor, and window management. |
+| [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) | Input | Canonical, backend-independent input event stream — real evdev on Linux, simulated backend for hardware-free testing. |
+| [SHER-Aurora](https://github.com/Mullassery/SHER-Aurora) | Design system | GNOME-style design system — tokens, typography, motion, and an automated WCAG contrast audit. |
+| [SHER-Process-Explorer](https://github.com/Mullassery/SHER-Process-Explorer) | Observability | Evidence-based Linux process investigation tool — /proc telemetry, bpftrace integration, daemon + CLI + desktop UI. |
+
+Each works standalone; they're complementary by design. [Browse all projects →](https://github.com/Mullassery?tab=repositories)
 
 ## License
 
