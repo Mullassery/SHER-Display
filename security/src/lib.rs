@@ -77,7 +77,7 @@ impl PermissionManager {
             permission,
             tier,
             granted_at: now,
-            expires_at: now + tier.duration_secs(),
+            expires_at: now.saturating_add(tier.duration_secs()),
         };
         self.grants.insert((app_id, permission), grant);
     }
