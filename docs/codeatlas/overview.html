@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CodeAtlas</title>
+<script src="https://unpkg.com/cytoscape@3.23.0/dist/cytoscape.min.js"></script>
+<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+<script src="https://unpkg.com/cytoscape-dagre@2.4.0/cytoscape-dagre.js"></script>
+<style>
+  body { margin: 0; font-family: -apple-system, sans-serif; }
+  #cy { width: 100vw; height: 100vh; }
+  header { padding: 12px 16px; border-bottom: 1px solid #eee; }
+</style>
+</head>
+<body>
+<header>
+  <strong>CodeAtlas</strong>
+  <p>Architecture map of SHER-Display.</p>
+</header>
+<div id="cy"></div>
+<script>
+const data = {"nodes": [{"data": {"id": "clipboard", "label": "clipboard", "description": "Owns 0 symbols across 1 file(s)."}}, {"data": {"id": "compatibility", "label": "compatibility", "description": "Owns 0 symbols across 0 file(s).", "linkUrl": "./compatibility.html"}}, {"data": {"id": "compositor", "label": "compositor", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./compositor.html"}}, {"data": {"id": "configuration", "label": "configuration", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./configuration.html"}}, {"data": {"id": "cursor", "label": "cursor", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./cursor.html"}}, {"data": {"id": "diagnostics", "label": "diagnostics", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./diagnostics.html"}}, {"data": {"id": "docs", "label": "docs", "description": "Owns 0 symbols across 0 file(s).", "linkUrl": "./docs.html"}}, {"data": {"id": "input", "label": "input", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./input.html"}}, {"data": {"id": "outputs", "label": "outputs", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./outputs.html"}}, {"data": {"id": "scene", "label": "scene", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./scene.html"}}, {"data": {"id": "security", "label": "security", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./security.html"}}, {"data": {"id": "session", "label": "session", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./session.html"}}, {"data": {"id": "surfaces", "label": "surfaces", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./surfaces.html"}}, {"data": {"id": "tools", "label": "tools", "description": "Owns 0 symbols across 0 file(s).", "linkUrl": "./tools.html"}}, {"data": {"id": "windows", "label": "windows", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./windows.html"}}, {"data": {"id": "workspaces", "label": "workspaces", "description": "Owns 0 symbols across 1 file(s).", "linkUrl": "./workspaces.html"}}, {"data": {"id": "SHER_Display", "label": "SHER-Display", "description": "Owns 0 symbols across 12 file(s)."}}], "edges": [{"data": {"id": "edge_0", "source": "scene", "target": "tools", "label": "calls"}}, {"data": {"id": "edge_1", "source": "security", "target": "scene", "label": "calls"}}, {"data": {"id": "edge_2", "source": "security", "target": "tools", "label": "calls"}}, {"data": {"id": "edge_3", "source": "surfaces", "target": "scene", "label": "calls"}}, {"data": {"id": "edge_4", "source": "surfaces", "target": "tools", "label": "calls"}}, {"data": {"id": "edge_5", "source": "windows", "target": "scene", "label": "calls"}}, {"data": {"id": "edge_6", "source": "windows", "target": "tools", "label": "calls"}}, {"data": {"id": "edge_7", "source": "workspaces", "target": "scene", "label": "calls"}}, {"data": {"id": "edge_8", "source": "workspaces", "target": "tools", "label": "calls"}}, {"data": {"id": "edge_9", "source": "compatibility", "target": "scene", "label": "calls"}}, {"data": {"id": "edge_10", "source": "compatibility", "target": "surfaces", "label": "calls"}}, {"data": {"id": "edge_11", "source": "compatibility", "target": "windows", "label": "calls"}}, {"data": {"id": "edge_12", "source": "compatibility", "target": "compositor", "label": "calls"}}, {"data": {"id": "edge_13", "source": "compositor", "target": "scene", "label": "calls"}}, {"data": {"id": "edge_14", "source": "compositor", "target": "surfaces", "label": "calls"}}, {"data": {"id": "edge_15", "source": "compositor", "target": "tools", "label": "calls"}}, {"data": {"id": "edge_16", "source": "configuration", "target": "scene", "label": "calls"}}, {"data": {"id": "edge_17", "source": "input", "target": "windows", "label": "calls"}}, {"data": {"id": "edge_18", "source": "outputs", "target": "scene", "label": "calls"}}, {"data": {"id": "edge_19", "source": "outputs", "target": "tools", "label": "calls"}}]};
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+  elements: data,
+  style: [
+    { selector: 'node', style: {
+      'label': 'data(label)',
+      'shape': 'round-rectangle',
+      'background-color': '#eef2ff',
+      'border-color': '#6366f1',
+      'border-width': 1,
+      'width': 'label',
+      'padding': '10px',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'font-size': '12px',
+    }},
+    { selector: 'edge', style: {
+      'label': 'data(label)',
+      'curve-style': 'bezier',
+      'target-arrow-shape': 'triangle',
+      'font-size': '10px',
+      'text-rotation': 'autorotate',
+    }}
+  ],
+  layout: { name: 'dagre', rankDir: 'LR' }
+});
+cy.on('tap', 'node', evt => {
+  const node = evt.target;
+  if (node.data('linkUrl')) { window.location.href = node.data('linkUrl'); }
+});
+</script>
+</body>
+</html>
