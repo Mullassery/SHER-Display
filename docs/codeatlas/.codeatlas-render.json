@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "outputs": {
+    "md": [
+      "compatibility.2.md",
+      "compositor.3.md",
+      "configuration.4.md",
+      "cursor.5.md",
+      "diagnostics.6.md",
+      "docs.7.md",
+      "input.8.md",
+      "outputs.9.md",
+      "overview.md",
+      "scene.10.md",
+      "security.11.md",
+      "session.12.md",
+      "surfaces.13.md",
+      "tools.14.md",
+      "wayland.2.1.md",
+      "windows.15.md",
+      "workspaces.16.md",
+      "xwayland.2.2.md"
+    ],
+    "html": [
+      "compatibility.2.html",
+      "compositor.3.html",
+      "configuration.4.html",
+      "cursor.5.html",
+      "diagnostics.6.html",
+      "docs.7.html",
+      "input.8.html",
+      "outputs.9.html",
+      "overview.html",
+      "scene.10.html",
+      "security.11.html",
+      "session.12.html",
+      "surfaces.13.html",
+      "tools.14.html",
+      "wayland.2.1.html",
+      "windows.15.html",
+      "workspaces.16.html",
+      "xwayland.2.2.html"
+    ]
+  }
+}
