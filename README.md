@@ -9,12 +9,12 @@ The native display server, compositor, and window-management subsystem for the S
 
 SHER Display is the layer that turns rendered application surfaces and normalized device activity — from [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) and [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) — into an actual, interactive desktop: a compositor, a scene graph, window and workspace management, focus routing, cursor handling, session state, and a capability-based security boundary.
 
-It is a 14-crate Rust workspace (about 56 tests, zero failures) built around a native surface/window/compositor model rather than a renamed `wl_display`. Wayland (and X11 via XWayland) compatibility is layered at the edge, where it belongs; underneath, the native model is designed for what a modern desktop needs — structured window operations an AI agent can call directly instead of simulating mouse and keyboard.
+It is a 14-crate Rust workspace (62 tests, zero failures) built around a native surface/window/compositor model rather than a renamed `wl_display`. Wayland (and X11 via XWayland) compatibility is layered at the edge, where it belongs; underneath, the native model is designed for what a modern desktop needs — structured window operations an AI agent can call directly instead of simulating mouse and keyboard.
 
 ## Features / Highlights
 
-- **Native compositor pipeline** — damage tracking and adaptive per-output scheduling (`compositor`), a z-ordered scene graph (`scene`), application surface lifecycle (`surfaces`), window state/layout/snap (`windows`), and virtual workspaces (`workspaces`).
-- **Multi-output display policy** — mirrors SHER-Graphics's connector/mode facts without re-owning the GPU (`outputs`).
+- **Native compositor pipeline** — damage tracking and an independent per-output frame scheduler (`compositor`), a z-ordered scene graph (`scene`), application surface lifecycle (`surfaces`), window state/layout/snap (`windows`), and virtual workspaces (`workspaces`). Each output keeps its own refresh interval, next deadline, and tick counter, so mixed-refresh layouts (60 Hz + 144 Hz, etc.) are not paced by one global frame clock; the scheduling logic is a pure, headless-testable `FrameScheduler`.
+- **Multi-output display policy** — mirrors SHER-Graphics's connector/mode facts without re-owning the GPU (`outputs`), including per-output refresh-rate changes that leave other outputs' deadlines untouched.
 - **Input routing with isolation by construction** — `sher_display_input` drives a real `sher_input_core::InputService` (no local mock), and `RoutedEvent` has no variant that can carry an arbitrary surface id, so an unfocused application has no code path to another application's keystrokes.
 - **Focus, shortcuts, cursor, and security** — focus-aware routing and global shortcuts (`input`), hardware/software cursor negotiation (`cursor`), and time-bound permission grants for capture/recording/injection/clipboard (`security`).
 - **Explicit session state machine** — login, lock, restart, and multi-seat transitions that reject illegal state changes instead of coercing them (`session`).
@@ -39,7 +39,7 @@ It is a 14-crate Rust workspace (about 56 tests, zero failures) built around a n
 
 ## Project status
 
-- **Implemented and tested (14 crates, 56 tests):** `compositor`, `scene`, `surfaces`, `windows`, `workspaces`, `outputs`, `input`, `cursor`, `security`, `compatibility/wayland`, `compatibility/xwayland`, `session`, `diagnostics`, `configuration`.
+- **Implemented and tested (14 crates, 62 tests):** `compositor`, `scene`, `surfaces`, `windows`, `workspaces`, `outputs`, `input`, `cursor`, `security`, `compatibility/wayland`, `compatibility/xwayland`, `session`, `diagnostics`, `configuration`.
 - **Not yet scaffolded:** clipboard (manifest-only stub), drag-and-drop, screenshot, recording, animation, headless mode, AI/agent APIs (see [`ROADMAP.md`](./ROADMAP.md)).
 - **Open decision, not executed:** a migration to a leaner `crates/` layout plus a native `sher_display_protocol` and a `sher_display_backend`/`sher_display_linux` split (tracked in `ROADMAP.md` Phase 0).
 - **No tagged releases yet** — everything is unreleased, pre-alpha (see [`CHANGELOG.md`](./CHANGELOG.md)).
@@ -82,6 +82,7 @@ This is a library workspace with no runnable binary yet; it is exercised through
 
 **Blocked / failed:**
 - Usable desktop; clipboard/recording/headless scaffolding.
+- Hardware validation of per-output VSync: `FrameScheduler` is unit-tested headlessly and the compositor polls it per output, but it is not yet driven by real vblank/presentation-completion events from SHER-Graphics, nor backed by per-output OS timer/render threads. One slow output's *scheduling* is independent; truly independent *rendering* on real hardware remains unvalidated. See `ROADMAP.md` Phase 3.
 
 **Rejected / deferred:**
 - Wayland/X11 desktop parity.

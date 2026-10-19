@@ -10,9 +10,9 @@ contradicts it.
 ## What was actually verified this pass, and how
 
 - `cargo build --workspace --all-targets` — clean, no errors, no warnings.
-- `cargo test --workspace` — **56/56 tests pass**, 0 failures. Matches the
+- `cargo test --workspace` — **62/62 tests pass**, 0 failures. Matches the
   number README.md already claims; independently re-counted from raw
-  `cargo test` output (not taken on faith): 4+4+4+3+3+5+5+4+3+4+6+3+4+4 = 56
+  `cargo test` output (not taken on faith): 4+4+10+3+3+5+5+4+3+4+6+3+4+4 = 62
   across the 14 workspace crates.
 - `cargo clippy --workspace --all-targets -- -D warnings` — zero warnings.
 - `cargo fmt -- --check` — clean.

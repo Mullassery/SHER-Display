@@ -13,6 +13,15 @@ full commit-by-commit history see `git log`.
 - Core compositor pipeline: `compositor`, `scene`, `surfaces`, `windows`,
   `workspaces`, `outputs`, `input`, `cursor` — 8 crates, in-memory /
   simulated state, unit-tested.
+- Independent per-output frame scheduling (C11) in `compositor`: a pure
+  `FrameScheduler` gives every output its own refresh interval, next
+  deadline, and tick counter. The compositor's `tick` polls all outputs
+  independently, so mixed-refresh layouts (e.g. 60 Hz + 144 Hz) are not
+  paced by a single global clock, and a late poll coalesces missed periods
+  instead of emitting a frame burst. Changing one output's refresh rate or
+  unregistering it leaves other outputs' deadlines untouched. Covered by
+  mixed-rate deadline/coupling tests plus a 10-second headless 60/144 Hz
+  simulation (workspace now 62 tests).
 - Security boundary: `security` (time-bound, fail-closed permission grants).
 - Compatibility boundary: `compatibility/wayland`, `compatibility/xwayland`.
 - Cross-cutting: `session` (login/lock state machine), `diagnostics`
@@ -32,6 +41,13 @@ no native display protocol, no clipboard/drag-and-drop/screenshot/
 recording/animation/headless implementation (manifests/directories don't
 exist yet, not even stubs, except `clipboard`'s manifest-only crate), no
 Aurora integration.
+
+Specifically for C11/per-output VSync: scheduling is implemented and
+headlessly tested, but it is not yet driven by real vblank or
+presentation-completion feedback from SHER-Graphics, and the compositor
+still polls from one loop rather than owning per-output OS timer/render
+threads. Whether one slow output can delay another's actual *rendering* on
+real hardware remains unvalidated (ROADMAP Phase 3).
 
 ### Fixed
 - Corrected several documentation claims found inaccurate on
