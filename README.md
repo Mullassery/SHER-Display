@@ -78,6 +78,16 @@ This is a library workspace with no runnable binary yet; it is exercised through
 - [`SECURITY.md`](./SECURITY.md) — how to report a security issue privately
 - [`CHANGELOG.md`](./CHANGELOG.md) — change history
 
+## Known issues and deferred work
+
+**Blocked / failed:**
+- Usable desktop; clipboard/recording/headless scaffolding.
+
+**Rejected / deferred:**
+- Wayland/X11 desktop parity.
+
+Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+
 ## Queue status
 
 Shipped, blocked/failed, and rejected work for this repository is documented in
