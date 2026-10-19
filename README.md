@@ -88,11 +88,6 @@ This is a library workspace with no runnable binary yet; it is exercised through
 
 Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
 
-## Queue status
-
-Shipped, blocked/failed, and rejected work for this repository is documented in
-[`QUEUE_STATUS.md`](QUEUE_STATUS.md).
-
 ## Contributing
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup and the pre-PR checklist, [`SECURITY.md`](./SECURITY.md) to report a security issue privately, and [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md). Change history is in [`CHANGELOG.md`](./CHANGELOG.md) (no tagged releases yet — everything is unreleased, pre-alpha).
