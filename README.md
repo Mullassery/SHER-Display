@@ -72,7 +72,7 @@ This is a library workspace with no runnable binary yet; it is exercised through
 
 - [`VISION.md`](./VISION.md) — subsystem ownership boundaries, the display model, and protocol/backend philosophy
 - [`ROADMAP.md`](./ROADMAP.md) — the full phased plan with an honest status marker on every line
-- [`ROADMAP_HONEST.md`](./ROADMAP_HONEST.md) — technical-debt inventory and CI/tooling gaps
+- [`docs/internal/ROADMAP_HONEST.md`](docs/internal/ROADMAP_HONEST.md) — technical-debt inventory and CI/tooling gaps
 - [`docs/architecture/README.md`](./docs/architecture/README.md) — Mermaid diagrams of cross-repo layering and internal crate dependencies
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — setup and the pre-PR checklist
 - [`SECURITY.md`](./SECURITY.md) — how to report a security issue privately
@@ -87,7 +87,7 @@ This is a library workspace with no runnable binary yet; it is exercised through
 **Rejected / deferred:**
 - Wayland/X11 desktop parity.
 
-Full shipped/blocked/rejected detail: [`QUEUE_STATUS.md`](QUEUE_STATUS.md).
+Full shipped/blocked/rejected detail: [`docs/internal/QUEUE_STATUS.md`](docs/internal/QUEUE_STATUS.md).
 
 ## Contributing
 

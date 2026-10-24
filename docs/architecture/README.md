@@ -74,7 +74,7 @@ it does not.
 | Aurora | panels, launcher, widgets, desktop policy, visual language | compositor/window-management mechanism |
 
 The one architectural rule every crate in this repo is audited against
-(most recently by `ROADMAP_HONEST.md`'s pass, zero violations found):
+(most recently by `../internal/ROADMAP_HONEST.md`'s pass, zero violations found):
 **never construct a driver or stateful hardware handle another subsystem
 already owns.** `outputs/` mirrors `Connector`/`DisplayMode` *facts*; it
 does not instantiate `gpu_driver::GPUDriver`. See VISION.md's "GPUDriver

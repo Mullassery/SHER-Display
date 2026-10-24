@@ -9,7 +9,7 @@ It has:
 
 - **Never had a third-party security audit.**
 - **No fuzzing, no `cargo audit` run in CI yet** (see
-  [ROADMAP_HONEST.md](ROADMAP_HONEST.md) for why, and what's tracked to fix
+  [docs/internal/ROADMAP_HONEST.md](docs/internal/ROADMAP_HONEST.md) for why, and what's tracked to fix
   that).
 - **No real attack surface today.** There is no network listener, no
   privilege boundary crossing real processes, and no code that touches real

@@ -35,7 +35,7 @@ full commit-by-commit history see `git log`.
 
 ### Known incomplete / not started
 See [ROADMAP.md](ROADMAP.md) for the authoritative, phase-by-phase status
-and [ROADMAP_HONEST.md](ROADMAP_HONEST.md) for the technical-debt and
+and [docs/internal/ROADMAP_HONEST.md](docs/internal/ROADMAP_HONEST.md) for the technical-debt and
 tooling-gap inventory. Headline gaps: no GPU composition wiring (Phase 3),
 no native display protocol, no clipboard/drag-and-drop/screenshot/
 recording/animation/headless implementation (manifests/directories don't
@@ -55,7 +55,7 @@ real hardware remains unvalidated (ROADMAP Phase 3).
   integration framing) — see git log for details; each was a docs-only
   correction, not a behavior change.
 - Hardened the two unwrap-after-invariant-check sites flagged in
-  `ROADMAP_HONEST.md`: `windows/src/lib.rs:126` (`activate()`) and
+  `docs/internal/ROADMAP_HONEST.md`: `windows/src/lib.rs:126` (`activate()`) and
   `compositor/src/lib.rs:104` and `:113` (`tick()`). Replaced bare
   `.unwrap()` with `.expect("<invariant, spelled out>")` so a future
   refactor that breaks the invariant panics with an explanation instead of
@@ -65,5 +65,5 @@ real hardware remains unvalidated (ROADMAP Phase 3).
   pass, 56/56 tests still green.
 - Ran `cargo audit` for real this pass (network was available, unlike the
   prior pass): 75 crate dependencies scanned against 1258 RustSec
-  advisories, zero vulnerabilities found. See `ROADMAP_HONEST.md` for the
+  advisories, zero vulnerabilities found. See `docs/internal/ROADMAP_HONEST.md` for the
   updated status.
