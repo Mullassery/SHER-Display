@@ -69,9 +69,10 @@ started.
       multi-monitor policy: hotplug with guaranteed non-empty output set
       (virtual fallback), independent scale/position/orientation per
       output.
-- [~] `clipboard`: manifest created, implementation not started — was
-      mid-flight when spec v2 arrived; folding scope into the leaner crate
-      set is part of the pending structural migration.
+- [x] `clipboard`: ownership, multi-format offers, and permission-gated
+      bounded text history (spec section 20). Other apps need a time-bound
+      `ClipboardAccess` grant; binary formats are offered but not retained.
+      7 tests.
 - [x] `compatibility/wayland` (`sher_display_compat_wayland`): translates
       client-connect/create-surface/attach-buffer/damage/commit/destroy
       into calls against `Compositor`/`WindowManager`, guarantees no

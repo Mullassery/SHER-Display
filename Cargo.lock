@@ -284,6 +284,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "sher_display_clipboard"
+version = "0.1.0"
+dependencies = [
+ "sher_common",
+ "sher_display_security",
+]
+
+[[package]]
 name = "sher_display_compat_wayland"
 version = "0.1.0"
 dependencies = [
