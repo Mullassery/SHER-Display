@@ -28,10 +28,10 @@ violated).
 ## Development setup
 
 ```bash
-git clone https://github.com/Mullassery/SHER-KERNEL
-git clone https://github.com/Mullassery/SHER-Graphics
-git clone https://github.com/Mullassery/SHER-INPUT
-git clone https://github.com/Mullassery/SHER-Display
+git clone ../SHER-KERNEL
+git clone ../SHER-Graphics
+git clone ../SHER-INPUT
+git clone ../SHER-Display
 cd SHER-Display
 cargo build --workspace
 cargo test --workspace

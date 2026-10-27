@@ -3,11 +3,11 @@
 The native display server, compositor, and window-management subsystem for the SHER OS family.
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-[![CI](https://github.com/Mullassery/SHER-Display/actions/workflows/ci.yml/badge.svg)](https://github.com/Mullassery/SHER-Display/actions/workflows/ci.yml)
+[![CI](../SHER-Display/actions/workflows/ci.yml/badge.svg)](../SHER-Display/actions/workflows/ci.yml)
 
 ## What it is
 
-SHER Display is the layer that turns rendered application surfaces and normalized device activity — from [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) and [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) — into an actual, interactive desktop: a compositor, a scene graph, window and workspace management, focus routing, cursor handling, session state, and a capability-based security boundary.
+SHER Display is the layer that turns rendered application surfaces and normalized device activity — from [SHER-Graphics](../SHER-Graphics) and [SHER-INPUT](../SHER-INPUT) — into an actual, interactive desktop: a compositor, a scene graph, window and workspace management, focus routing, cursor handling, session state, and a capability-based security boundary.
 
 It is a 14-crate Rust workspace (62 tests, zero failures) built around a native surface/window/compositor model rather than a renamed `wl_display`. Wayland (and X11 via XWayland) compatibility is layered at the edge, where it belongs; underneath, the native model is designed for what a modern desktop needs — structured window operations an AI agent can call directly instead of simulating mouse and keyboard.
 
@@ -46,13 +46,13 @@ It is a 14-crate Rust workspace (62 tests, zero failures) built around a native 
 
 ## Installation
 
-Requires Rust 1.75+, with [`SHER-KERNEL`](https://github.com/Mullassery/SHER-KERNEL), [`SHER-Graphics`](https://github.com/Mullassery/SHER-Graphics), and [`SHER-INPUT`](https://github.com/Mullassery/SHER-INPUT) checked out as **sibling directories** (`../SHER-KERNEL`, `../SHER-Graphics`, `../SHER-INPUT` relative to this repo), because those crates are consumed via relative path dependencies, not published packages:
+Requires Rust 1.75+, with [`SHER-KERNEL`](../SHER-KERNEL), [`SHER-Graphics`](../SHER-Graphics), and [`SHER-INPUT`](../SHER-INPUT) checked out as **sibling directories** (`../SHER-KERNEL`, `../SHER-Graphics`, `../SHER-INPUT` relative to this repo), because those crates are consumed via relative path dependencies, not published packages:
 
 ```bash
-git clone https://github.com/Mullassery/SHER-KERNEL.git
-git clone https://github.com/Mullassery/SHER-Graphics.git
-git clone https://github.com/Mullassery/SHER-INPUT.git
-git clone https://github.com/Mullassery/SHER-Display.git
+git clone ../SHER-KERNEL
+git clone ../SHER-Graphics
+git clone ../SHER-INPUT
+git clone ../SHER-Display
 cd SHER-Display
 cargo build --workspace
 ```
@@ -99,14 +99,14 @@ SHER-Display is part of the SHER OS family — an AI-native operating system bui
 
 | Tool | Role | What it does |
 |---|---|---|
-| [SHER-KERNEL](https://github.com/Mullassery/SHER-KERNEL) | Kernel core | Core kernel scaffolding: object model, scheduling, memory, driver-lifecycle concepts, and a Linux Kernel Interface (LKI) compatibility layer. |
-| [SHER-Graphics](https://github.com/Mullassery/SHER-Graphics) | Graphics/GPU | GPU abstraction and rendering — software simulation plus a real, working Vulkan/MoltenVK backend. |
-| [SHER-Display](https://github.com/Mullassery/SHER-Display) | Display/compositor | **This project** — display server, compositor, and window management. |
-| [SHER-INPUT](https://github.com/Mullassery/SHER-INPUT) | Input | Canonical, backend-independent input event stream — real evdev on Linux, simulated backend for hardware-free testing. |
-| [SHER-Aurora](https://github.com/Mullassery/SHER-Aurora) | Design system | GNOME-style design system — tokens, typography, motion, and an automated WCAG contrast audit. |
-| [SHER-Process-Explorer](https://github.com/Mullassery/SHER-Process-Explorer) | Observability | Evidence-based Linux process investigation tool — /proc telemetry, bpftrace integration, daemon + CLI + desktop UI. |
+| [SHER-KERNEL](../SHER-KERNEL) | Kernel core | Core kernel scaffolding: object model, scheduling, memory, driver-lifecycle concepts, and a Linux Kernel Interface (LKI) compatibility layer. |
+| [SHER-Graphics](../SHER-Graphics) | Graphics/GPU | GPU abstraction and rendering — software simulation plus a real, working Vulkan/MoltenVK backend. |
+| [SHER-Display](../SHER-Display) | Display/compositor | **This project** — display server, compositor, and window management. |
+| [SHER-INPUT](../SHER-INPUT) | Input | Canonical, backend-independent input event stream — real evdev on Linux, simulated backend for hardware-free testing. |
+| [SHER-Aurora](../SHER-Aurora) | Design system | GNOME-style design system — tokens, typography, motion, and an automated WCAG contrast audit. |
+| [SHER-Process-Explorer](../SHER-Process-Explorer) | Observability | Evidence-based Linux process investigation tool — /proc telemetry, bpftrace integration, daemon + CLI + desktop UI. |
 
-Each works standalone; they're complementary by design. [Browse all projects →](https://github.com/Mullassery?tab=repositories)
+Each works standalone; they're complementary by design. [Browse all projects →](../Mullassery-profile)
 
 ## License
 
